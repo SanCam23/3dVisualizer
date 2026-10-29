@@ -1,0 +1,6 @@
+supabase>=2.13.0
+postgrest>=0.18.0
+storage3>=0.8.0
+gotrue>=2.11.0
+requests>=2.32.0
+
