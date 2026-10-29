@@ -60,33 +60,33 @@ export function DeleteModal({ model, open, onOpenChange, onDeleteSuccess }: Dele
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2 text-red-400">
-          <AlertTriangle className="w-5 h-5 text-red-500" />
-          ¿Eliminar modelo permanentemente?
+        <DialogTitle className="flex items-center gap-2 text-rose-400">
+          <AlertTriangle className="w-5 h-5 text-rose-500" />
+          ¿Eliminar modelo de Cheat Cook?
         </DialogTitle>
         <DialogDescription>
-          Esta acción eliminará de forma irreversible el modelo <strong className="text-foreground">{model.name}</strong>, incluyendo todas sus versiones históricas (.blend y .glb) del almacenamiento.
+          Esta acción eliminará de forma irreversible el modelo <strong className="text-white font-semibold">{model.name}</strong>, incluyendo todas sus versiones históricas (.blend y .glb) de Supabase Storage.
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-3 py-2">
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs space-y-1">
-          <div className="font-semibold text-red-400">Archivos que se eliminarán:</div>
-          <ul className="list-disc list-inside text-muted-foreground font-mono space-y-0.5">
-            <li>{model.source_path || "Archivo .blend"}</li>
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-2xl text-xs space-y-1.5">
+          <div className="font-semibold text-rose-300">Archivos que se eliminarán del almacenamiento:</div>
+          <ul className="list-disc list-inside text-[#A7B3C6] font-mono space-y-0.5">
+            <li>{model.source_path || "Archivo original .blend"}</li>
             {model.viewer_path && <li>{model.viewer_path}</li>}
           </ul>
         </div>
 
         {errorMessage && (
-          <div className="p-3 text-xs text-red-400 bg-red-500/20 border border-red-500/30 rounded-lg">
+          <div className="p-3 text-xs text-rose-300 bg-rose-500/20 border border-rose-500/35 rounded-xl">
             {errorMessage}
           </div>
         )}
 
         {isDone && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/20 border border-emerald-500/35 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>Modelo y almacenamiento eliminados exitosamente.</span>
           </div>
         )}
@@ -107,7 +107,7 @@ export function DeleteModal({ model, open, onOpenChange, onDeleteSuccess }: Dele
           isLoading={isDeleting}
           disabled={isDeleting || isDone}
           onClick={handleDelete}
-          className="gap-2"
+          className="gap-2 font-semibold"
         >
           <Trash2 className="w-4 h-4" />
           Eliminar definitivamente
@@ -116,4 +116,3 @@ export function DeleteModal({ model, open, onOpenChange, onDeleteSuccess }: Dele
     </Dialog>
   );
 }
-

@@ -13,10 +13,10 @@ import {
 import { Button } from "@/components/ui/Button";
 
 export const BACKGROUND_PRESETS = [
-  { name: "Estudio Oscuro", value: "#121316", border: "#27272a" },
+  { name: "Noche Cheat Cook", value: "#0B1220", border: "#25324B" },
+  { name: "Superficie Azul", value: "#121B2D", border: "#33425F" },
+  { name: "Crema Cálido", value: "#FFF8F4", border: "#F0E4DD" },
   { name: "Gris Grafito", value: "#18181b", border: "#3f3f46" },
-  { name: "Azul Medianoche", value: "#090d16", border: "#1e293b" },
-  { name: "Blanco Minimal", value: "#f4f4f5", border: "#e4e4e7" },
 ];
 
 interface ViewerControlsProps {
@@ -47,13 +47,13 @@ export function ViewerControls({
   const [showColorPicker, setShowColorPicker] = React.useState(false);
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-1.5 rounded-2xl bg-card/80 backdrop-blur-md border border-border shadow-2xl">
+    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 p-2 rounded-full bg-[#121B2D]/85 backdrop-blur-md border border-border shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
       {/* Reset Initial View */}
       <Button
         variant="ghost"
         size="icon"
         onClick={onResetView}
-        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        className="h-8 w-8 text-[#A7B3C6] hover:text-white rounded-full"
         title="Restablecer vista inicial"
       >
         <RotateCcw className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function ViewerControls({
         variant="ghost"
         size="icon"
         onClick={onCenterView}
-        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        className="h-8 w-8 text-[#A7B3C6] hover:text-white rounded-full"
         title="Centrar y encuadrar modelo"
       >
         <Focus className="w-4 h-4" />
@@ -77,10 +77,10 @@ export function ViewerControls({
         variant="ghost"
         size="icon"
         onClick={onToggleWireframe}
-        className={`h-8 w-8 ${
+        className={`h-8 w-8 rounded-full transition-all ${
           wireframe
-            ? "bg-primary/20 text-primary border border-primary/30"
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-[#FF6433]/20 text-[#FF7A50] border border-[#FF6433]/40 shadow-[0_0_12px_rgba(255,100,51,0.25)]"
+            : "text-[#A7B3C6] hover:text-white"
         }`}
         title={wireframe ? "Desactivar modo alambre" : "Activar modo alambre"}
       >
@@ -92,10 +92,10 @@ export function ViewerControls({
         variant="ghost"
         size="icon"
         onClick={onToggleGrid}
-        className={`h-8 w-8 ${
+        className={`h-8 w-8 rounded-full transition-all ${
           showGrid
-            ? "bg-primary/20 text-primary border border-primary/30"
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-[#FF6433]/20 text-[#FF7A50] border border-[#FF6433]/40 shadow-[0_0_12px_rgba(255,100,51,0.25)]"
+            : "text-[#A7B3C6] hover:text-white"
         }`}
         title={showGrid ? "Ocultar cuadrícula de suelo" : "Mostrar cuadrícula de suelo"}
       >
@@ -110,14 +110,14 @@ export function ViewerControls({
           variant="ghost"
           size="icon"
           onClick={() => setShowColorPicker(!showColorPicker)}
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="h-8 w-8 text-[#A7B3C6] hover:text-white rounded-full"
           title="Color de fondo del visor"
         >
           <Palette className="w-4 h-4" />
         </Button>
 
         {showColorPicker && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 p-2 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl flex items-center gap-2">
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 p-2.5 bg-[#121B2D]/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl flex items-center gap-2">
             {BACKGROUND_PRESETS.map((p) => (
               <button
                 key={p.value}
@@ -127,7 +127,7 @@ export function ViewerControls({
                 }}
                 className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${
                   backgroundColor === p.value
-                    ? "ring-2 ring-primary scale-110"
+                    ? "ring-2 ring-[#FF6433] scale-110"
                     : "opacity-80"
                 }`}
                 style={{ backgroundColor: p.value, borderColor: p.border }}
@@ -143,7 +143,7 @@ export function ViewerControls({
         variant="ghost"
         size="icon"
         onClick={onToggleFullscreen}
-        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        className="h-8 w-8 text-[#A7B3C6] hover:text-white rounded-full"
         title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
       >
         {isFullscreen ? (
@@ -155,4 +155,3 @@ export function ViewerControls({
     </div>
   );
 }
-

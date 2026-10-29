@@ -6,7 +6,8 @@ import { ModelCanvas, ModelCanvasHandle } from "@/components/viewer/ModelCanvas"
 import { ViewerToolbar } from "@/components/viewer/ViewerToolbar";
 import { ViewerControls, BACKGROUND_PRESETS } from "@/components/viewer/ViewerControls";
 import { Button } from "@/components/ui/Button";
-import { Loader2, AlertCircle, RefreshCw, Box } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import Link from "next/link";
 
 interface ModelViewerProps {
@@ -82,13 +83,13 @@ export function ModelViewer({ model }: ModelViewerProps) {
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-          <div className="p-4 rounded-full bg-secondary/80 border border-border mb-4">
-            <Box className="w-12 h-12 text-muted-foreground animate-pulse" />
+          <div className="p-4 rounded-3xl bg-secondary/80 border border-border mb-4 shadow-lg">
+            <CheatCookLogo className="w-14 h-14 opacity-60 animate-pulse" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-bold text-white">
             Archivo .glb no disponible todavía
           </h2>
-          <p className="text-sm text-muted-foreground max-w-md mt-1 mb-6">
+          <p className="text-xs text-[#A7B3C6] max-w-md mt-1.5 mb-6 leading-relaxed">
             {model.status === "processing"
               ? "El archivo original .blend está en cola de procesamiento o convirtiéndose actualmente con Blender headless."
               : model.status === "updating"
@@ -98,7 +99,7 @@ export function ModelViewer({ model }: ModelViewerProps) {
               : "El modelo no tiene un visor compilado asociado."}
           </p>
           <Link href="/">
-            <Button variant="outline">Volver a la biblioteca</Button>
+            <Button variant="outline" className="font-medium">Volver a la biblioteca 3D</Button>
           </Link>
         </div>
       )}

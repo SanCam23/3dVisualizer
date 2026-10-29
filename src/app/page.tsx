@@ -7,9 +7,9 @@ import { ModelSearchFilter } from "@/components/library/ModelSearchFilter";
 import { UploadModal } from "@/components/library/UploadModal";
 import { UpdateModal } from "@/components/library/UpdateModal";
 import { DeleteModal } from "@/components/library/DeleteModal";
-import { SystemStatusBanner } from "@/components/library/SystemStatusBanner";
+import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { Button } from "@/components/ui/Button";
-import { Box, Layers, RefreshCw, AlertCircle, Plus } from "lucide-react";
+import { Layers, RefreshCw, AlertCircle, Plus, Sparkles } from "lucide-react";
 
 export default function LibraryPage() {
   const [models, setModels] = useState<Model3D[]>([]);
@@ -61,36 +61,39 @@ export default function LibraryPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
       {/* Top Title & Stats Banner */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Layers className="w-7 h-7 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+            <Layers className="w-7 h-7 text-[#FF6433]" />
             Biblioteca de Modelos 3D
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-            Repositorio centralizado de activos 3D en formato original <span className="font-mono text-primary font-medium">.blend</span> convertidos automáticamente a <span className="font-mono text-primary font-medium">.glb</span> para su visualización interactiva con Three.js.
+          <p className="text-sm text-[#A7B3C6] mt-1.5 max-w-2xl leading-relaxed">
+            Sube tus archivos originales de Blender <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.blend</span>. El sistema los procesa en segundo plano a <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.glb</span> para su visualización 3D interactiva en el visor de Cheat Cook.
           </p>
         </div>
 
-        {/* Quick Stats Counter */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="px-3 py-1.5 rounded-lg bg-card border border-border">
-            <span className="text-muted-foreground block text-[10px] uppercase font-mono">Disponibles</span>
-            <span className="font-semibold text-emerald-400 text-sm">{availableCount}</span>
+        {/* Quick Stats Counters */}
+        <div className="flex items-center gap-2.5 text-xs">
+          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
+            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+              Disponibles
+            </span>
+            <span className="font-extrabold text-emerald-400 text-base">{availableCount}</span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg bg-card border border-border">
-            <span className="text-muted-foreground block text-[10px] uppercase font-mono">En proceso</span>
-            <span className="font-semibold text-amber-400 text-sm">{processingCount}</span>
+          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
+            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+              En proceso
+            </span>
+            <span className="font-extrabold text-amber-400 text-base">{processingCount}</span>
           </div>
-          <div className="px-3 py-1.5 rounded-lg bg-card border border-border">
-            <span className="text-muted-foreground block text-[10px] uppercase font-mono">Total Activos</span>
-            <span className="font-semibold text-foreground text-sm">{totalModels}</span>
+          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
+            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+              Total Activos
+            </span>
+            <span className="font-extrabold text-white text-base">{totalModels}</span>
           </div>
         </div>
       </div>
-
-      {/* System Status Banner */}
-      <SystemStatusBanner />
 
       {/* Search and Action Toolbar */}
       <ModelSearchFilter
@@ -104,10 +107,10 @@ export default function LibraryPage() {
 
       {/* Error state */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span className="text-sm">{errorMessage}</span>
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 shrink-0 text-rose-400" />
+            <span className="text-sm font-medium">{errorMessage}</span>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels()} className="gap-1.5">
             <RefreshCw className="w-3.5 h-3.5" /> Reintentar
@@ -119,7 +122,7 @@ export default function LibraryPage() {
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-pulse">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-72 rounded-xl border border-border bg-card/40" />
+            <div key={i} className="h-72 rounded-2xl border border-border bg-card/40" />
           ))}
         </div>
       )}
@@ -140,14 +143,14 @@ export default function LibraryPage() {
 
       {/* Empty State when no models match search */}
       {!isLoading && !errorMessage && models.length === 0 && searchQuery && (
-        <div className="text-center py-16 px-4 rounded-xl border border-dashed border-border bg-card/20 flex flex-col items-center">
-          <div className="p-4 rounded-full bg-secondary mb-3">
-            <Box className="w-8 h-8 text-muted-foreground" />
+        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-border bg-card/30 flex flex-col items-center">
+          <div className="p-4 rounded-2xl bg-secondary mb-3">
+            <CheatCookLogo className="w-10 h-10 opacity-40" />
           </div>
-          <h3 className="font-semibold text-foreground text-base">
+          <h3 className="font-bold text-white text-base">
             No se encontraron modelos
           </h3>
-          <p className="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
+          <p className="text-xs text-[#8391A9] max-w-sm mt-1 mb-5">
             No hay ningún modelo que coincida con el término &ldquo;{searchQuery}&rdquo;.
           </p>
           <Button
@@ -163,23 +166,24 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {/* Empty State when library is empty */}
+      {/* Empty State when library is empty (Brand Cheat Cook) */}
       {!isLoading && !errorMessage && models.length === 0 && !searchQuery && (
-        <div className="text-center py-20 px-4 rounded-xl border border-dashed border-border bg-card/20 flex flex-col items-center">
-          <div className="p-4 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <Box className="w-10 h-10 text-primary" />
+        <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-[#FF6433]/30 bg-gradient-to-b from-[#121B2D]/90 to-[#0B1220]/90 backdrop-blur-sm flex flex-col items-center shadow-lg">
+          <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-[#FF6433]/20 via-[#FF6433]/10 to-transparent border border-[#FF6433]/30 shadow-[0_0_30px_rgba(255,100,51,0.2)]">
+            <CheatCookLogo className="w-16 h-16 drop-shadow-md" />
           </div>
-          <h3 className="font-semibold text-foreground text-lg">
-            La biblioteca está vacía
+          <h3 className="font-extrabold text-white text-xl tracking-tight">
+            La biblioteca 3D de Cheat Cook está vacía
           </h3>
-          <p className="text-sm text-muted-foreground max-w-md mt-1 mb-6">
-            Comienza subiendo tu primer archivo <span className="font-mono text-primary font-medium">.blend</span> de Blender. El sistema se encargará de su conversión automática a <span className="font-mono text-primary font-medium">.glb</span> para su visualización interactiva.
+          <p className="text-sm text-[#A7B3C6] max-w-md mt-2 mb-7 leading-relaxed">
+            Comienza subiendo tu primer archivo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.blend</span> de Blender. El worker se encargará de su conversión automática a <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.glb</span> para visualizarlo interactivamente.
           </p>
           <Button
             onClick={() => setIsUploadOpen(true)}
-            className="gap-2 shadow-lg shadow-primary/20"
+            size="lg"
+            className="gap-2.5 shadow-lg shadow-[#FF6433]/25"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5 stroke-[2.5]" />
             Subir mi primer modelo .blend
           </Button>
         </div>
@@ -208,4 +212,3 @@ export default function LibraryPage() {
     </div>
   );
 }
-

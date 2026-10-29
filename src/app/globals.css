@@ -1,51 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 4.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 4.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 217 91% 60%;
-    --radius: 0.5rem;
+    /* Cheat Cook Dark Theme (Default) */
+    --background: 220 49% 8.5%;        /* #0B1220 */
+    --foreground: 210 40% 96%;        /* #F1F5F9 */
+    --card: 220 43% 12.5%;             /* #121B2D */
+    --card-foreground: 210 40% 96%;
+    --popover: 220 43% 12.5%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 14 100% 65%;            /* #FF7A50 (Coral Cheat Cook) */
+    --primary-foreground: 18 80% 6%;   /* #1B0A03 */
+    --secondary: 221 41% 16%;          /* #18233A */
+    --secondary-foreground: 217 21% 80%;
+    --muted: 221 34% 18%;
+    --muted-foreground: 218 18% 65%;   /* #8391A9 */
+    --accent: 14 100% 65%;             /* #FF7A50 */
+    --accent-foreground: 18 80% 6%;
+    --destructive: 349 95% 71%;        /* #FB7185 */
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 34% 22%;             /* #25324B */
+    --input: 220 34% 22%;
+    --ring: 14 100% 65%;
+    --radius: 1rem;
   }
 
   .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    /* Cheat Cook Light Theme */
+    --background: 24 100% 98%;         /* #FFF8F4 (Crema cálido) */
+    --foreground: 222 47% 11%;         /* #0F172A */
+    --card: 0 0% 100%;                 /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221 83% 53%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 17 88% 40%;             /* #C2410C (Coral 700 para contraste AA) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 100% 96%;          /* #FFF1EA */
+    --secondary-foreground: 222 47% 11%;
+    --muted: 24 33% 94%;
+    --muted-foreground: 215 16% 47%;   /* #64748B */
+    --accent: 14 100% 60%;             /* #FF6433 */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 349 89% 41%;        /* #BE123C */
+    --destructive-foreground: 0 0% 100%;
+    --border: 24 43% 91%;              /* #F0E4DD */
+    --input: 24 43% 91%;
+    --ring: 14 100% 60%;
   }
 }
 
@@ -55,13 +59,17 @@
 
 body {
   background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(900px 420px at 100% -10%, rgba(255, 100, 51, 0.12), transparent 60%),
+    radial-gradient(700px 380px at -10% 110%, rgba(47, 148, 99, 0.10), transparent 55%);
+  background-attachment: fixed;
   color: hsl(var(--foreground));
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar */
+/* Custom Cheat Cook scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -72,11 +80,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  background: hsl(var(--border));
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: #FF6433;
 }
-

@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Model3D } from "@/lib/types/models";
 import { StatusBadge } from "@/components/library/StatusBadge";
 import { Button } from "@/components/ui/Button";
+import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { formatDate, formatBytes } from "@/lib/utils/formatters";
-import { Eye, RefreshCw, Trash2, Box, Layers, HardDrive } from "lucide-react";
+import { Eye, RefreshCw, Trash2, Layers, HardDrive } from "lucide-react";
 
 interface ModelCardProps {
   model: Model3D;
@@ -20,9 +21,9 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
   const isProcessing = model.status === "processing";
 
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border bg-card/80 backdrop-blur-sm transition-all duration-300 hover:border-border/80 hover:shadow-xl hover:shadow-primary/5 overflow-hidden">
+    <div className="group relative flex flex-col rounded-2xl border border-border bg-[#121B2D]/80 backdrop-blur-sm transition-all duration-300 hover:border-[#FF6433]/50 hover:shadow-[0_8px_24px_rgba(255,100,51,0.12)] overflow-hidden">
       {/* 3D Preview / Thumbnail Area */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-b from-muted/40 to-muted/80 flex items-center justify-center border-b border-border">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-b from-[#18233A] to-[#0F1828] flex items-center justify-center border-b border-border">
         {model.thumbnail_path ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -32,12 +33,12 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-muted-foreground transition-transform duration-300 group-hover:scale-110">
-            <div className="relative">
-              <Box className="w-14 h-14 stroke-[1.2] text-primary/70" />
-              <div className="absolute inset-0 blur-xl bg-primary/20 rounded-full" />
+            <div className="relative flex items-center justify-center">
+              <CheatCookLogo className="w-14 h-14 drop-shadow-lg opacity-85" />
+              <div className="absolute inset-0 blur-2xl bg-[#FF6433]/20 rounded-full" />
             </div>
-            <span className="text-xs mt-2 font-mono text-muted-foreground/70 uppercase tracking-widest">
-              3D GLB Asset
+            <span className="text-[10px] mt-2.5 font-mono font-semibold text-[#8391A9] tracking-widest uppercase">
+              Modelo 3D GLB
             </span>
           </div>
         )}
@@ -45,17 +46,17 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
         {/* Top Badges overlay */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           <StatusBadge status={model.status} />
-          <span className="inline-flex items-center gap-1 rounded-md bg-background/80 backdrop-blur-md px-2 py-0.5 text-xs font-mono font-medium text-foreground border border-border shadow-sm">
-            <Layers className="w-3 h-3 text-muted-foreground" />
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#0B1220]/80 backdrop-blur-md px-2.5 py-0.5 text-xs font-mono font-semibold text-white border border-border shadow-sm">
+            <Layers className="w-3 h-3 text-[#FF7A50]" />
             v{model.version}
           </span>
         </div>
 
         {/* Interactive Quick View overlay if available */}
         {isAvailable && (
-          <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-[#0B1220]/50 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
             <Link href={`/models/${model.id}`}>
-              <Button size="sm" className="shadow-lg gap-1.5 font-medium">
+              <Button size="sm" className="shadow-lg gap-1.5 font-semibold">
                 <Eye className="w-4 h-4" />
                 Abrir Visor
               </Button>
@@ -68,11 +69,11 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
       <div className="p-4 flex flex-col flex-1">
         {/* Title & Metadata */}
         <div className="flex-1">
-          <h3 className="font-semibold text-base text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-base text-white tracking-tight line-clamp-1 group-hover:text-[#FF7A50] transition-colors">
             {model.name}
           </h3>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8391A9]">
             <span title="Fecha de última actualización">
               {formatDate(model.updated_at)}
             </span>
@@ -85,7 +86,7 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
           </div>
 
           {model.last_error && (
-            <p className="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded p-1.5 line-clamp-2">
+            <p className="mt-2 text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl p-2 line-clamp-2">
               {model.last_error}
             </p>
           )}
@@ -99,7 +100,7 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
               <Button
                 variant="default"
                 size="sm"
-                className="w-full gap-1.5 text-xs"
+                className="w-full gap-1.5 text-xs font-semibold"
               >
                 <Eye className="w-3.5 h-3.5" />
                 Visualizar
@@ -123,10 +124,10 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
             size="sm"
             onClick={() => onUpdate(model)}
             disabled={isUpdating}
-            className="gap-1.5 text-xs hover:border-primary/50"
+            className="gap-1.5 text-xs hover:border-[#FF6433]/50"
             title="Subir nueva versión conservando el mismo identificador"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
+            <RefreshCw className="w-3.5 h-3.5 text-[#A7B3C6]" />
             <span className="hidden sm:inline">Actualizar</span>
           </Button>
 
@@ -136,7 +137,7 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
             size="sm"
             onClick={() => onDelete(model)}
             disabled={isUpdating}
-            className="text-xs hover:bg-destructive/10 hover:text-red-400 text-muted-foreground p-2"
+            className="text-xs hover:bg-rose-500/15 hover:text-rose-400 text-[#8391A9] p-2"
             title="Eliminar modelo y archivos asociados"
           >
             <Trash2 className="w-4 h-4" />
@@ -146,4 +147,3 @@ export function ModelCard({ model, onUpdate, onDelete }: ModelCardProps) {
     </div>
   );
 }
-

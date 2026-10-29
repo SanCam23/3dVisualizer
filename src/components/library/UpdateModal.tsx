@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Model3D } from "@/lib/types/models";
+import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { validateBlendFile } from "@/lib/utils/blendValidator";
 import { formatBytes } from "@/lib/utils/formatters";
 import { RefreshCw, FileBox, AlertCircle, CheckCircle2, ShieldCheck, ArrowRight, X } from "lucide-react";
@@ -83,7 +84,7 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
       }
 
       setSuccessNotice(
-        `Actualización iniciada a v${model.version + 1}. La versión anterior (v${model.version}) seguirá disponible hasta que el nuevo archivo .glb se confirme.`
+        `Actualización iniciada a v${model.version + 1}. La versión anterior (v${model.version}) continuará activa hasta que el nuevo archivo .glb se confirme.`
       );
 
       setTimeout(() => {
@@ -100,35 +101,37 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <RefreshCw className="w-5 h-5 text-primary" />
+        <DialogTitle className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-xl bg-[#FF6433]/20 border border-[#FF6433]/30">
+            <CheatCookLogo className="w-5 h-5" />
+          </div>
           Actualizar modelo (v{model.version} &rarr; v{model.version + 1})
         </DialogTitle>
         <DialogDescription>
-          Sube una versión más moderna de <strong className="text-foreground">{model.name}</strong>. Se conservará el identificador permanente ({model.id}).
+          Sube una versión más moderna de <strong className="text-white font-semibold">{model.name}</strong>. Se conservará el identificador permanente en Cheat Cook.
         </DialogDescription>
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Version Transition Banner */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border text-xs">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0B1220]/70 border border-border text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-mono bg-background px-2 py-0.5 rounded border border-border font-medium">
+            <span className="font-mono bg-[#18233A] px-2.5 py-1 rounded-full border border-border text-white font-semibold">
               v{model.version} (Activa)
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="font-mono bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/30 font-medium">
+            <ArrowRight className="w-3.5 h-3.5 text-[#8391A9]" />
+            <span className="font-mono bg-[#FF6433]/20 text-[#FF7A50] px-2.5 py-1 rounded-full border border-[#FF6433]/30 font-semibold">
               v{model.version + 1} (Nueva versión)
             </span>
           </div>
-          <span className="text-muted-foreground font-mono">{formatBytes(model.file_size)}</span>
+          <span className="text-[#8391A9] font-mono">{formatBytes(model.file_size)}</span>
         </div>
 
-        {/* Safe Update Guarantee Card */}
-        <div className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400">
-          <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
+        {/* Safe Update Guarantee Card (Cheat Cook Sage Accent) */}
+        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-300">
+          <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
           <div>
-            <strong className="block font-medium">Garantía de actualización atómica:</strong>
+            <strong className="block font-semibold">Garantía de actualización atómica:</strong>
             La versión actual seguirá en línea e intacta. Solo se reemplazará y limpiará tras verificar que el nuevo archivo .glb se ha generado correctamente.
           </div>
         </div>
@@ -136,10 +139,10 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
         {/* File Picker */}
         <div
           onClick={() => !file && fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[140px] ${
+          className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[140px] ${
             file
-              ? "border-primary bg-primary/5"
-              : "border-border hover:border-muted-foreground/50 bg-muted/20"
+              ? "border-[#FF6433] bg-[#FF6433]/10"
+              : "border-border hover:border-[#FF6433]/50 bg-[#0B1220]/40"
           }`}
         >
           <input
@@ -157,9 +160,9 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
 
           {file ? (
             <div className="flex flex-col items-center">
-              <FileBox className="w-8 h-8 text-primary mb-1.5" />
-              <div className="text-sm font-medium text-foreground">{file.name}</div>
-              <div className="text-xs text-muted-foreground">{formatBytes(file.size)}</div>
+              <FileBox className="w-8 h-8 text-[#FF7A50] mb-1.5" />
+              <div className="text-sm font-bold text-white">{file.name}</div>
+              <div className="text-xs text-[#8391A9]">{formatBytes(file.size)}</div>
               <button
                 type="button"
                 onClick={(e) => {
@@ -167,19 +170,19 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
                   setFile(null);
                 }}
                 disabled={isSubmitting}
-                className="mt-2 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300"
               >
                 <X className="w-3.5 h-3.5" /> Cambiar archivo
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <RefreshCw className="w-8 h-8 text-muted-foreground mb-1.5" />
-              <div className="text-sm font-medium text-foreground">
-                Selecciona el nuevo archivo <span className="font-mono text-primary">.blend</span>
+              <RefreshCw className="w-8 h-8 text-[#FF7A50] mb-1.5" />
+              <div className="text-sm font-semibold text-white">
+                Selecciona el nuevo archivo <span className="font-mono text-[#FF7A50]">.blend</span>
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                Valida cabecera y extensiones antes de subir
+              <div className="text-xs text-[#8391A9] mt-0.5">
+                Se validará la cabecera BLENDER antes de subir
               </div>
             </div>
           )}
@@ -188,13 +191,13 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
         {/* Progress */}
         {isSubmitting && (
           <div className="space-y-1.5 animate-in fade-in">
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-[#A7B3C6]">
               <span>Subiendo nueva versión persistente...</span>
-              <span>{uploadProgress}%</span>
+              <span className="font-mono font-semibold text-[#FF7A50]">{uploadProgress}%</span>
             </div>
-            <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-[#18233A] h-2 rounded-full overflow-hidden">
               <div
-                className="bg-primary h-full transition-all duration-300 rounded-full"
+                className="bg-[#FF6433] h-full transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -202,15 +205,15 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
         )}
 
         {errorMessage && (
-          <div className="flex items-center gap-2 p-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 p-3 text-xs text-rose-300 bg-rose-500/15 border border-rose-500/25 rounded-xl">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successNotice && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>{successNotice}</span>
           </div>
         )}
@@ -228,7 +231,7 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
             type="submit"
             isLoading={isSubmitting}
             disabled={!file || isSubmitting}
-            className="gap-2"
+            className="gap-2 font-semibold"
           >
             Confirmar actualización
           </Button>
@@ -237,4 +240,3 @@ export function UpdateModal({ model, open, onOpenChange, onUpdateSuccess }: Upda
     </Dialog>
   );
 }
-

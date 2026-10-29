@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { validateBlendFile } from "@/lib/utils/blendValidator";
 import { formatBytes } from "@/lib/utils/formatters";
 import { UploadCloud, FileBox, AlertCircle, CheckCircle2, X } from "lucide-react";
@@ -54,7 +55,6 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
 
     setFile(selectedFile);
     if (!modelName.trim()) {
-      // Auto-populate name without .blend extension
       const baseName = selectedFile.name.replace(/\.blend$/i, "");
       const formatted = baseName.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
       setModelName(formatted);
@@ -89,7 +89,6 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
       formData.append("file", file);
       formData.append("name", finalName);
 
-      // Simulated progress ticker during upload
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => (prev < 90 ? prev + 15 : prev));
       }, 300);
@@ -109,7 +108,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
       }
 
       setSuccessNotice(
-        `Modelo '${finalName}' subido correctamente. Registro en cola de conversión .glb.`
+        `Modelo '${finalName}' subido a Cheat Cook. Registro en cola de conversión .glb.`
       );
 
       setTimeout(() => {
@@ -130,28 +129,31 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <UploadCloud className="w-5 h-5 text-primary" />
+        <DialogTitle className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-xl bg-[#FF6433]/20 border border-[#FF6433]/30">
+            <CheatCookLogo className="w-5 h-5" />
+          </div>
           Subir nuevo modelo Blender (.blend)
         </DialogTitle>
         <DialogDescription>
-          Selecciona un archivo .blend. Se subirá de forma persistente y se iniciará la conversión a .glb para Three.js.
+          Selecciona un archivo .blend de Cheat Cook. Se almacenará de forma persistente y se iniciará la conversión a .glb para Three.js.
         </DialogDescription>
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Model Name */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-foreground">
+          <label className="text-xs font-semibold text-white">
             Nombre del modelo
           </label>
           <Input
-            placeholder="Ej: Drone de Reconocimiento V1"
+            placeholder="Ej: Nevera Inteligente Cheat Cook V1"
             value={modelName}
             onChange={(e) => setModelName(e.target.value)}
             disabled={isSubmitting}
+            className="rounded-xl bg-[#0B1220]/70 border-border focus-visible:ring-[#FF6433]"
           />
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px] text-[#8391A9]">
             Si se deja en blanco, se utilizará el nombre del archivo.
           </span>
         </div>
@@ -165,12 +167,12 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           onClick={() => !file && fileInputRef.current?.click()}
-          className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[160px] ${
+          className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[160px] ${
             isDragging
-              ? "border-primary bg-primary/10"
+              ? "border-[#FF6433] bg-[#FF6433]/15 scale-[1.01]"
               : file
-              ? "border-emerald-500/50 bg-emerald-500/5"
-              : "border-border hover:border-muted-foreground/50 bg-muted/20"
+              ? "border-emerald-500/50 bg-emerald-500/10"
+              : "border-border hover:border-[#FF6433]/50 bg-[#0B1220]/40"
           }`}
         >
           <input
@@ -189,8 +191,8 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
           {file ? (
             <div className="flex flex-col items-center">
               <FileBox className="w-10 h-10 text-emerald-400 mb-2" />
-              <div className="text-sm font-medium text-foreground">{file.name}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
+              <div className="text-sm font-bold text-white">{file.name}</div>
+              <div className="text-xs text-[#8391A9] mt-0.5">
                 {formatBytes(file.size)}
               </div>
               <button
@@ -200,19 +202,19 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
                   setFile(null);
                 }}
                 disabled={isSubmitting}
-                className="mt-3 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
+                className="mt-3 inline-flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300"
               >
                 <X className="w-3.5 h-3.5" /> Quitar archivo
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <UploadCloud className="w-10 h-10 text-muted-foreground mb-2" />
-              <div className="text-sm font-medium text-foreground">
-                Arrastra tu archivo <span className="font-mono text-primary">.blend</span> aquí
+              <UploadCloud className="w-10 h-10 text-[#FF7A50] mb-2" />
+              <div className="text-sm font-semibold text-white">
+                Arrastra tu archivo <span className="font-mono text-[#FF7A50]">.blend</span> aquí
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                o haz clic para explorar tus archivos locales (hasta 250 MB)
+              <div className="text-xs text-[#8391A9] mt-1">
+                o haz clic para explorar tus archivos (hasta 250 MB)
               </div>
             </div>
           )}
@@ -221,13 +223,13 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
         {/* Progress Bar */}
         {isSubmitting && (
           <div className="space-y-1.5 animate-in fade-in">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Subiendo archivo persistente...</span>
-              <span>{uploadProgress}%</span>
+            <div className="flex justify-between text-xs text-[#A7B3C6]">
+              <span>Subiendo archivo a Supabase Storage...</span>
+              <span className="font-mono font-semibold text-[#FF7A50]">{uploadProgress}%</span>
             </div>
-            <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-[#18233A] h-2 rounded-full overflow-hidden">
               <div
-                className="bg-primary h-full transition-all duration-300 rounded-full"
+                className="bg-[#FF6433] h-full transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -236,16 +238,16 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
 
         {/* Error message */}
         {errorMessage && (
-          <div className="flex items-center gap-2 p-3 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 p-3 text-xs text-rose-300 bg-rose-500/15 border border-rose-500/25 rounded-xl">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {/* Success message */}
         {successNotice && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>{successNotice}</span>
           </div>
         )}
@@ -263,7 +265,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
             type="submit"
             isLoading={isSubmitting}
             disabled={!file || isSubmitting}
-            className="gap-2"
+            className="gap-2 font-semibold"
           >
             Subir y procesar
           </Button>
@@ -272,4 +274,3 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
     </Dialog>
   );
 }
-

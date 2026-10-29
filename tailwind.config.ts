@@ -46,29 +46,52 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        coral: {
+          50: "#FFF4EF",
+          100: "#FFE6DB",
+          200: "#FFC9B3",
+          300: "#FFA483",
+          500: "#FF6433",
+          600: "#E84E1F",
+          700: "#C2410C",
+          800: "#9A3412",
+        },
+        sage: {
+          50: "#EEF8F2",
+          100: "#D6EFE0",
+          300: "#7CC59C",
+          500: "#2F9463",
+          600: "#1F7A4D",
+          700: "#145C38",
+        },
       },
       borderRadius: {
+        "3xl": "1.75rem",
+        "2xl": "1.25rem",
+        xl: "1rem",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        pill: "9999px",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        sans: ["'Plus Jakarta Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ["'JetBrains Mono'", "monospace"],
+      },
+      boxShadow: {
+        "warm-sm": "0 1px 2px rgba(60,24,8,.06), 0 1px 1px rgba(60,24,8,.04)",
+        "warm-md": "0 8px 24px rgba(60,24,8,.08)",
+        "warm-lg": "0 28px 70px rgba(60,24,8,.16)",
+        "coral-glow": "0 0 25px rgba(255, 100, 51, 0.25)",
       },
       keyframes: {
         "pulse-subtle": {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
-        "spin-slow": {
-          from: { transform: "rotate(0deg)" },
-          to: { transform: "rotate(360deg)" },
-        },
       },
       animation: {
         "pulse-subtle": "pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "spin-slow": "spin-slow 12s linear infinite",
       },
     },
   },
@@ -76,4 +99,3 @@ const config: Config = {
 };
 
 export default config;
-

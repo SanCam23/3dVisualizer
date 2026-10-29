@@ -134,8 +134,8 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       rimLight.position.set(0, -5, -5);
       scene.add(rimLight);
 
-      // 6. Floor Grid Helper
-      const grid = new THREE.GridHelper(20, 40, 0x3b82f6, 0x334155);
+      // 6. Floor Grid Helper (Cheat Cook Coral axis + dark slate lines)
+      const grid = new THREE.GridHelper(20, 40, 0xff6433, 0x25324b);
       grid.position.y = 0;
       scene.add(grid);
       gridRef.current = grid;
