@@ -68,7 +68,7 @@ export default function LibraryPage() {
             Biblioteca de Modelos 3D
           </h1>
           <p className="text-sm text-[#A7B3C6] mt-1.5 max-w-2xl leading-relaxed">
-            Sube tus archivos originales de Blender <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.blend</span>. El sistema los procesa en segundo plano a <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.glb</span> para su visualización 3D interactiva en el visor de Cheat Cook.
+            Sube tus modelos en formato 3D nativo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.glb</span> con materiales y texturas integradas. Visualización interactiva inmediata en el visor 3D de Cheat Cook.
           </p>
         </div>
 
@@ -136,6 +136,11 @@ export default function LibraryPage() {
               model={model}
               onUpdate={(m) => setSelectedForUpdate(m)}
               onDelete={(m) => setSelectedForDelete(m)}
+              onStatusChange={(id, newStatus) => {
+                setModels((prev) =>
+                  prev.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
+                );
+              }}
             />
           ))}
         </div>
@@ -176,7 +181,7 @@ export default function LibraryPage() {
             La biblioteca 3D de Cheat Cook está vacía
           </h3>
           <p className="text-sm text-[#A7B3C6] max-w-md mt-2 mb-7 leading-relaxed">
-            Comienza subiendo tu primer archivo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.blend</span> de Blender. El worker se encargará de su conversión automática a <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.glb</span> para visualizarlo interactivamente.
+            Comienza subiendo tu primer archivo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.glb</span> compilado. Estará disponible de inmediato con su miniatura para visualizarlo interactivamente.
           </p>
           <Button
             onClick={() => setIsUploadOpen(true)}
@@ -184,7 +189,7 @@ export default function LibraryPage() {
             className="gap-2.5 shadow-lg shadow-[#FF6433]/25"
           >
             <Plus className="w-5 h-5 stroke-[2.5]" />
-            Subir mi primer modelo .blend
+            Subir mi primer modelo .glb
           </Button>
         </div>
       )}

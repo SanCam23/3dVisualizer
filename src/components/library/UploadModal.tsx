@@ -5,7 +5,8 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } fr
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
-import { validateBlendFile } from "@/lib/utils/blendValidator";
+import { validateGlbFile } from "@/lib/utils/glbValidator";
+import { generateGlbThumbnail } from "@/lib/utils/thumbnailGenerator";
 import { formatBytes } from "@/lib/utils/formatters";
 import { UploadCloud, FileBox, AlertCircle, CheckCircle2, X } from "lucide-react";
 
@@ -46,16 +47,16 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
 
   const handleFileSelected = async (selectedFile: File) => {
     setErrorMessage(null);
-    const validation = await validateBlendFile(selectedFile);
+    const validation = await validateGlbFile(selectedFile);
     if (!validation.valid) {
-      setErrorMessage(validation.error || "Archivo .blend no válido.");
+      setErrorMessage(validation.error || "Archivo .glb no válido.");
       setFile(null);
       return;
     }
 
     setFile(selectedFile);
     if (!modelName.trim()) {
-      const baseName = selectedFile.name.replace(/\.blend$/i, "");
+      const baseName = selectedFile.name.replace(/\.glb$/i, "");
       const formatted = baseName.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
       setModelName(formatted);
     }
@@ -72,26 +73,38 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      setErrorMessage("Por favor, selecciona un archivo .blend.");
+      setErrorMessage("Por favor, selecciona un archivo .glb.");
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage(null);
-    setUploadProgress(10);
+    setUploadProgress(15);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     try {
-      const finalName = modelName.trim() || file.name.replace(/\.blend$/i, "");
+      const finalName = modelName.trim() || file.name.replace(/\.glb$/i, "");
       const formData = new FormData();
       formData.append("file", file);
       formData.append("name", finalName);
 
+      // Generación automática de miniatura en el navegador con Three.js
+      setUploadProgress(30);
+      try {
+        const thumbnailBlob = await generateGlbThumbnail(file);
+        if (thumbnailBlob) {
+          formData.append("thumbnail", thumbnailBlob, "thumbnail.png");
+        }
+      } catch (thumbErr) {
+        console.warn("Could not generate client thumbnail:", thumbErr);
+      }
+
+      setUploadProgress(50);
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => (prev < 90 ? prev + 15 : prev));
-      }, 300);
+        setUploadProgress((prev) => (prev < 90 ? prev + 10 : prev));
+      }, 250);
 
       const res = await fetch("/api/models", {
         method: "POST",
@@ -108,13 +121,13 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
       }
 
       setSuccessNotice(
-        `Modelo '${finalName}' subido a Cheat Cook. Registro en cola de conversión .glb.`
+        `¡Modelo '${finalName}' subido y disponible inmediatamente en el visor 3D!`
       );
 
       setTimeout(() => {
         onUploadSuccess();
         handleClose();
-      }, 1500);
+      }, 1200);
     } catch (err: unknown) {
       if ((err as Error)?.name === "AbortError") {
         setErrorMessage("Subida cancelada por el usuario.");
@@ -133,10 +146,10 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
           <div className="p-1.5 rounded-xl bg-[#FF6433]/20 border border-[#FF6433]/30">
             <CheatCookLogo className="w-5 h-5" />
           </div>
-          Subir nuevo modelo Blender (.blend)
+          Subir nuevo modelo 3D (.glb)
         </DialogTitle>
         <DialogDescription>
-          Selecciona un archivo .blend de Cheat Cook. Se almacenará de forma persistente y se iniciará la conversión a .glb para Three.js.
+          Selecciona un archivo compilado .glb con materiales y texturas integradas. Se publicará inmediatamente para su visualización interactiva.
         </DialogDescription>
       </DialogHeader>
 
@@ -178,7 +191,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
           <input
             ref={fileInputRef}
             type="file"
-            accept=".blend"
+            accept=".glb,model/gltf-binary"
             className="hidden"
             onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
@@ -211,7 +224,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
             <div className="flex flex-col items-center">
               <UploadCloud className="w-10 h-10 text-[#FF7A50] mb-2" />
               <div className="text-sm font-semibold text-white">
-                Arrastra tu archivo <span className="font-mono text-[#FF7A50]">.blend</span> aquí
+                Arrastra tu archivo <span className="font-mono text-[#FF7A50]">.glb</span> aquí
               </div>
               <div className="text-xs text-[#8391A9] mt-1">
                 o haz clic para explorar tus archivos (hasta 250 MB)
@@ -224,7 +237,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
         {isSubmitting && (
           <div className="space-y-1.5 animate-in fade-in">
             <div className="flex justify-between text-xs text-[#A7B3C6]">
-              <span>Subiendo archivo a Supabase Storage...</span>
+              <span>Subiendo archivo y procesando miniatura...</span>
               <span className="font-mono font-semibold text-[#FF7A50]">{uploadProgress}%</span>
             </div>
             <div className="w-full bg-[#18233A] h-2 rounded-full overflow-hidden">
@@ -267,7 +280,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
             disabled={!file || isSubmitting}
             className="gap-2 font-semibold"
           >
-            Subir y procesar
+            Subir modelo .glb
           </Button>
         </DialogFooter>
       </form>

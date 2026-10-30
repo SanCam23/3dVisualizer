@@ -32,9 +32,10 @@ export interface Model3D {
   created_at: string;
   updated_at: string;
   
-  // Signed / computed URLs for client viewer
+  // Signed / computed URLs for client viewer and cards
   viewer_url?: string | null;
   source_url?: string | null;
+  thumbnail_url?: string | null;
 }
 
 export interface ModelVersion {

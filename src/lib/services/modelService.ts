@@ -1,5 +1,5 @@
 import { createServerClient, isSupabaseReady } from "@/lib/supabase/server";
-import { Model3D, ModelVersion, ConversionJob } from "@/lib/types/models";
+import { Model3D, ModelVersion, ConversionJob, ModelStatus } from "@/lib/types/models";
 
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "models3d";
 
@@ -64,16 +64,21 @@ export async function listModels(query?: string, statusFilter?: string): Promise
     throw new Error(`Error al consultar modelos: ${error.message}`);
   }
 
-  // Populate signed URLs for available viewer_paths
+  // Populate signed URLs for available viewer_paths and thumbnails
   const modelsWithUrls = await Promise.all(
     (data || []).map(async (model) => {
       let viewer_url: string | null = null;
+      let thumbnail_url: string | null = null;
       if (model.viewer_path) {
         viewer_url = await getModelFileSignedUrl(model.viewer_path);
+      }
+      if (model.thumbnail_path) {
+        thumbnail_url = await getModelFileSignedUrl(model.thumbnail_path);
       }
       return {
         ...model,
         viewer_url,
+        thumbnail_url,
       } as Model3D;
     })
   );
@@ -98,20 +103,26 @@ export async function getModelById(id: string): Promise<Model3D | null> {
   if (!data) return null;
 
   let viewer_url: string | null = null;
+  let thumbnail_url: string | null = null;
   if (data.viewer_path) {
     viewer_url = await getModelFileSignedUrl(data.viewer_path);
+  }
+  if (data.thumbnail_path) {
+    thumbnail_url = await getModelFileSignedUrl(data.thumbnail_path);
   }
 
   return {
     ...data,
     viewer_url,
+    thumbnail_url,
   } as Model3D;
 }
 
 export async function createModelRecord(params: {
   id?: string;
   name: string;
-  source_path: string;
+  glb_path: string;
+  thumbnail_path?: string | null;
   file_size: number;
 }): Promise<Model3D> {
   const supabase = createServerClient();
@@ -121,9 +132,10 @@ export async function createModelRecord(params: {
     const newModel: Model3D = {
       id,
       name: params.name,
-      source_path: params.source_path,
-      viewer_path: null,
-      status: "processing",
+      source_path: params.glb_path,
+      viewer_path: params.glb_path,
+      thumbnail_path: params.thumbnail_path || null,
+      status: "available",
       version: 1,
       file_size: params.file_size,
       is_locked: false,
@@ -134,14 +146,16 @@ export async function createModelRecord(params: {
     return newModel;
   }
 
-  // 1. Create model record
+  // 1. Create model record directly as 'available'
   const { data, error } = await supabase
     .from("models")
     .insert({
       id,
       name: params.name,
-      source_path: params.source_path,
-      status: "processing",
+      source_path: params.glb_path,
+      viewer_path: params.glb_path,
+      thumbnail_path: params.thumbnail_path || null,
+      status: "available",
       version: 1,
       file_size: params.file_size,
       is_locked: false,
@@ -154,52 +168,56 @@ export async function createModelRecord(params: {
     throw new Error(`Fallo al registrar modelo en base de datos: ${error.message}`);
   }
 
-  // 2. Create model_versions record
+  // 2. Create model_versions record directly as 'ready'
   await supabase.from("model_versions").insert({
     model_id: id,
     version: 1,
-    source_path: params.source_path,
-    status: "processing",
+    source_path: params.glb_path,
+    viewer_path: params.glb_path,
+    status: "ready",
     file_size: params.file_size,
   });
 
-  // 3. Create conversion_jobs record for Blender worker
-  const targetGlbPath = `models/${id}/v1/model.glb`;
-  await supabase.from("conversion_jobs").insert({
-    model_id: id,
-    version: 1,
-    source_path: params.source_path,
-    target_path: targetGlbPath,
-    status: "queued",
-  });
+  let viewer_url: string | null = null;
+  let thumbnail_url: string | null = null;
+  if (data.viewer_path) {
+    viewer_url = await getModelFileSignedUrl(data.viewer_path);
+  }
+  if (data.thumbnail_path) {
+    thumbnail_url = await getModelFileSignedUrl(data.thumbnail_path);
+  }
 
-  return data as Model3D;
+  return {
+    ...data,
+    viewer_url,
+    thumbnail_url,
+  } as Model3D;
 }
 
 export async function updateModelVersion(params: {
   model_id: string;
-  new_source_path: string;
+  new_glb_path: string;
+  new_thumbnail_path?: string | null;
   file_size: number;
 }): Promise<Model3D> {
   const supabase = createServerClient();
-  const { model_id, new_source_path, file_size } = params;
+  const { model_id, new_glb_path, new_thumbnail_path, file_size } = params;
 
   if (!supabase) {
     const existing = mockModels.find((m) => m.id === model_id);
     if (!existing) throw new Error("Modelo no encontrado.");
-    if (existing.is_locked || existing.status === "updating") {
-      throw new Error("El modelo ya se encuentra en proceso de actualización.");
-    }
-
     const nextVer = existing.version + 1;
-    existing.is_locked = true;
-    existing.status = "updating";
+    existing.source_path = new_glb_path;
+    existing.viewer_path = new_glb_path;
+    if (new_thumbnail_path) existing.thumbnail_path = new_thumbnail_path;
+    existing.status = "available";
     existing.version = nextVer;
+    existing.file_size = file_size;
     existing.updated_at = new Date().toISOString();
     return { ...existing };
   }
 
-  // 1. Check existing model and concurrency lock
+  // 1. Check existing model
   const { data: current, error: getErr } = await supabase
     .from("models")
     .select("*")
@@ -210,19 +228,29 @@ export async function updateModelVersion(params: {
     throw new Error("No se pudo localizar el modelo a actualizar.");
   }
 
-  if (current.is_locked || current.status === "updating") {
-    throw new Error("El modelo tiene una actualización activa en curso. Espere a que finalice.");
-  }
-
   const nextVersion = current.version + 1;
-  const targetGlbPath = `models/${model_id}/v${nextVersion}/model.glb`;
 
-  // 2. Lock model & set status to updating
-  const { data: updated, error: lockErr } = await supabase
+  // 2. Register new version in model_versions (ready immediately)
+  await supabase.from("model_versions").insert({
+    model_id,
+    version: nextVersion,
+    source_path: new_glb_path,
+    viewer_path: new_glb_path,
+    status: "ready",
+    file_size,
+  });
+
+  // 3. Update model record (available immediately)
+  const { data: updated, error: updateErr } = await supabase
     .from("models")
     .update({
-      is_locked: true,
-      status: "updating",
+      version: nextVersion,
+      source_path: new_glb_path,
+      viewer_path: new_glb_path,
+      ...(new_thumbnail_path ? { thumbnail_path: new_thumbnail_path } : {}),
+      status: "available",
+      is_locked: false,
+      file_size,
       last_error: null,
       updated_at: new Date().toISOString(),
     })
@@ -230,29 +258,99 @@ export async function updateModelVersion(params: {
     .select()
     .single();
 
-  if (lockErr) {
-    throw new Error(`No se pudo bloquear el modelo para actualización: ${lockErr.message}`);
+  if (updateErr || !updated) {
+    throw new Error(`Fallo al actualizar el modelo: ${updateErr?.message || "Error desconocido"}`);
   }
 
-  // 3. Register new version in model_versions (status: processing)
-  await supabase.from("model_versions").insert({
-    model_id,
-    version: nextVersion,
-    source_path: new_source_path,
-    status: "processing",
-    file_size,
-  });
+  let viewer_url: string | null = null;
+  let thumbnail_url: string | null = null;
+  if (updated.viewer_path) {
+    viewer_url = await getModelFileSignedUrl(updated.viewer_path);
+  }
+  if (updated.thumbnail_path) {
+    thumbnail_url = await getModelFileSignedUrl(updated.thumbnail_path);
+  }
 
-  // 4. Queue conversion job for Blender headless worker
-  await supabase.from("conversion_jobs").insert({
-    model_id,
-    version: nextVersion,
-    source_path: new_source_path,
-    target_path: targetGlbPath,
-    status: "queued",
-  });
+  return {
+    ...updated,
+    viewer_url,
+    thumbnail_url,
+  } as Model3D;
+}
 
-  return updated as Model3D;
+export async function updateModelStatus(
+  id: string,
+  status: ModelStatus,
+  queueJob: boolean = false
+): Promise<Model3D> {
+  const supabase = createServerClient();
+
+  if (!supabase) {
+    const idx = mockModels.findIndex((m) => m.id === id);
+    if (idx === -1) throw new Error("Modelo no encontrado");
+    mockModels[idx].status = status;
+    mockModels[idx].updated_at = new Date().toISOString();
+    return { ...mockModels[idx] };
+  }
+
+  // 1. Update model record in database
+  const { data: updated, error } = await supabase
+    .from("models")
+    .update({
+      status,
+      last_error: status === "processing" ? null : undefined,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error || !updated) {
+    throw new Error(`Error al actualizar estado del modelo: ${error?.message || "No encontrado"}`);
+  }
+
+  // 2. If status is set to processing and queueJob is true, queue a conversion job
+  if (status === "processing" && queueJob && updated.source_path) {
+    const targetGlb = updated.viewer_path || updated.source_path.replace(/source\.[^.]+$/, "model.glb");
+    try {
+      await supabase.from("conversion_jobs").insert({
+        model_id: id,
+        version: updated.version || 1,
+        source_path: updated.source_path,
+        target_path: targetGlb,
+        status: "queued",
+      });
+    } catch (jobErr) {
+      console.warn("Notice: conversion_job could not be inserted (might already exist):", jobErr);
+    }
+  } else if (status === "available") {
+    // If switching back to available, remove any queued jobs so worker doesn't process them
+    try {
+      await supabase
+        .from("conversion_jobs")
+        .delete()
+        .eq("model_id", id)
+        .eq("status", "queued");
+    } catch (cleanErr) {
+      console.warn("Notice: could not cancel queued conversion_jobs:", cleanErr);
+    }
+  }
+
+  // 3. Return model with signed URLs
+  let viewer_url: string | null = null;
+  let thumbnail_url: string | null = null;
+  if (updated.viewer_path) {
+    viewer_url = await getModelFileSignedUrl(updated.viewer_path);
+  }
+  if (updated.thumbnail_path) {
+    thumbnail_url = await getModelFileSignedUrl(updated.thumbnail_path);
+  }
+
+  return {
+    ...updated,
+    viewer_url,
+    thumbnail_url,
+  } as Model3D;
 }
 
 export async function deleteModelRecord(id: string): Promise<boolean> {

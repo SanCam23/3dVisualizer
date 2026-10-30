@@ -66,7 +66,7 @@ export function ModelViewer({ model }: ModelViewerProps) {
           onProgress={(percent) => {
             setLoadPercent(percent);
             if (percent >= 100) {
-              setTimeout(() => setIsLoading(false), 300);
+              setIsLoading(false);
             }
           }}
           onLoaded={(info) => {

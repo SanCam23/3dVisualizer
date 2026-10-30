@@ -1,13 +1,16 @@
 /**
- * Validates a Blender .blend file both by extension and binary magic bytes.
- * Official Blender files start with 'BLENDER' (7 bytes: 'B', 'L', 'E', 'N', 'D', 'E', 'R')
- * followed by pointer size ('_' for 32-bit, '-' for 64-bit) and endianness ('v' or 'V').
+ * Validates a Blender .blend file by extension, size, and binary headers.
+ * Official Blender files can be:
+ *  1. Uncompressed: starts with ASCII 'BLENDER' (7 bytes)
+ *  2. Gzip compressed: starts with magic bytes 0x1F, 0x8B
+ *  3. Zstandard compressed (Blender 3.0+ default): starts with magic bytes 0x28, 0xB5, 0x2F, 0xFD
  */
 
 export interface ValidationResult {
   valid: boolean;
   error?: string;
   isBlenderMagic?: boolean;
+  compression?: "none" | "gzip" | "zstd";
 }
 
 export const MAX_FILE_SIZE_BYTES = 250 * 1024 * 1024; // 250 MB
@@ -36,29 +39,44 @@ export async function validateBlendFile(file: File): Promise<ValidationResult> {
     };
   }
 
-  // 3. Magic bytes verification (first 7 bytes)
+  // 3. Binary header inspection
   try {
-    const slice = file.slice(0, 12);
+    const slice = file.slice(0, 16);
     const buffer = await slice.arrayBuffer();
     const bytes = new Uint8Array(buffer);
-    const headerString = String.fromCharCode(...Array.from(bytes.slice(0, 7)));
 
-    if (headerString !== "BLENDER") {
+    // Case A: Uncompressed Blender file ('BLENDER')
+    const headerString = String.fromCharCode(...Array.from(bytes.slice(0, 7)));
+    if (headerString === "BLENDER") {
+      return { valid: true, isBlenderMagic: true, compression: "none" };
+    }
+
+    // Case B: Gzip-compressed Blender file (0x1F, 0x8B)
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+      return { valid: true, isBlenderMagic: true, compression: "gzip" };
+    }
+
+    // Case C: Zstandard-compressed Blender file (0x28, 0xB5, 0x2F, 0xFD)
+    if (bytes[0] === 0x28 && bytes[1] === 0xb5 && bytes[2] === 0x2f && bytes[3] === 0xfd) {
+      return { valid: true, isBlenderMagic: true, compression: "zstd" };
+    }
+
+    // Case D: Git LFS Pointer detector (common issue when downloading from GitHub)
+    const textPreview = new TextDecoder().decode(bytes);
+    if (textPreview.startsWith("version https://")) {
       return {
         valid: false,
-        error: "El contenido del archivo no coincide con un archivo binario válido de Blender (cabecera BLENDER ausente).",
-        isBlenderMagic: false,
+        error: "El archivo parece ser un puntero de Git LFS (texto de pocos bytes), no el archivo binario real de Blender.",
       };
     }
 
+    // If it has .blend extension, allow it and let Blender handle or report errors
     return {
       valid: true,
-      isBlenderMagic: true,
+      isBlenderMagic: false,
     };
   } catch (err) {
-    // If reading slice fails, fallback to extension check
     console.warn("Could not inspect binary header:", err);
     return { valid: true };
   }
 }
-

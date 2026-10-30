@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getModelById, updateModelVersion } from "@/lib/services/modelService";
 import { createServerClient } from "@/lib/supabase/server";
-import { validateBlendFile } from "@/lib/utils/blendValidator";
+import { validateGlbFile } from "@/lib/utils/glbValidator";
 
 export const dynamic = "force-dynamic";
 
@@ -20,27 +20,18 @@ export async function POST(
       );
     }
 
-    if (currentModel.is_locked || currentModel.status === "updating") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "El modelo ya está en proceso de actualización por otra operación activa.",
-        },
-        { status: 409 }
-      );
-    }
-
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const thumbnail = formData.get("thumbnail") as File | null;
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: "No se proporcionó ningún archivo .blend para la actualización" },
+        { success: false, error: "No se proporcionó ningún archivo .glb para la actualización" },
         { status: 400 }
       );
     }
 
-    const validation = await validateBlendFile(file);
+    const validation = await validateGlbFile(file);
     if (!validation.valid) {
       return NextResponse.json(
         { success: false, error: validation.error },
@@ -49,7 +40,8 @@ export async function POST(
     }
 
     const nextVersion = currentModel.version + 1;
-    const newSourcePath = `models/${id}/v${nextVersion}/source.blend`;
+    const newGlbPath = `models/${id}/v${nextVersion}/model.glb`;
+    let newThumbnailPath: string | null = null;
 
     // Upload new version to Storage
     const supabase = createServerClient();
@@ -59,8 +51,8 @@ export async function POST(
 
       const { error: uploadErr } = await supabase.storage
         .from(bucket)
-        .upload(newSourcePath, buffer, {
-          contentType: "application/octet-stream",
+        .upload(newGlbPath, buffer, {
+          contentType: "model/gltf-binary",
           upsert: true,
         });
 
@@ -68,24 +60,37 @@ export async function POST(
         return NextResponse.json(
           {
             success: false,
-            error: `Fallo al almacenar la nueva versión .blend: ${uploadErr.message}`,
+            error: `Fallo al almacenar la nueva versión .glb: ${uploadErr.message}`,
           },
           { status: 500 }
         );
       }
+
+      // Upload client thumbnail if provided
+      if (thumbnail) {
+        newThumbnailPath = `models/${id}/v${nextVersion}/thumbnail.png`;
+        const thumbBuffer = Buffer.from(await thumbnail.arrayBuffer());
+        await supabase.storage
+          .from(bucket)
+          .upload(newThumbnailPath, thumbBuffer, {
+            contentType: "image/png",
+            upsert: true,
+          });
+      }
     }
 
-    // Atomic update in Database
+    // Atomic update in Database (immediately available!)
     const updated = await updateModelVersion({
       model_id: id,
-      new_source_path: newSourcePath,
+      new_glb_path: newGlbPath,
+      new_thumbnail_path: newThumbnailPath,
       file_size: file.size,
     });
 
     return NextResponse.json({
       success: true,
       model: updated,
-      message: `Nueva versión v${nextVersion} subida y encolada. La versión anterior permanece activa hasta confirmar la conversión.`,
+      message: `Nueva versión v${nextVersion} subida y disponible inmediatamente.`,
     });
   } catch (err: unknown) {
     console.error("API POST /api/models/[id]/update error:", err);

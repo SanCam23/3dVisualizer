@@ -20,15 +20,15 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       );
     case "processing":
       return (
-        <Badge variant="warning" className={cn("gap-1.5 font-semibold animate-pulse", className)}>
-          <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />
-          <span>Procesando</span>
+        <Badge variant="warning" className={cn("gap-1.5 font-semibold", className)}>
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+          <span>En proceso</span>
         </Badge>
       );
     case "updating":
       return (
-        <Badge variant="default" className={cn("gap-1.5 font-semibold animate-pulse", className)}>
-          <RefreshCw className="w-3 h-3 text-[#FF7A50] animate-spin" />
+        <Badge variant="default" className={cn("gap-1.5 font-semibold", className)}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A50]" />
           <span>Actualizando</span>
         </Badge>
       );
@@ -36,7 +36,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       return (
         <Badge variant="destructive" className={cn("gap-1.5 font-semibold", className)}>
           <AlertCircle className="w-3 h-3 text-rose-400" />
-          <span>Error de procesamiento</span>
+          <span>Error</span>
         </Badge>
       );
     case "pending_upload":

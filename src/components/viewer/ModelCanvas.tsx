@@ -57,15 +57,19 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       centerModel: () => {
         if (!currentModelRef.current || !cameraRef.current || !controlsRef.current) return;
         const box = new THREE.Box3().setFromObject(currentModelRef.current);
-        const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = cameraRef.current.fov * (Math.PI / 180);
-        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.5;
-        cameraZ = Math.max(cameraZ, 2);
+        let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 0.75;
+        cameraDistance = Math.max(cameraDistance, 1.1);
 
-        cameraRef.current.position.set(center.x, center.y + maxDim * 0.3, center.z + cameraZ);
-        controlsRef.current.target.copy(center);
+        const targetY = Math.min(size.y * 0.25, 0.4);
+        cameraRef.current.position.set(
+          cameraDistance * 0.55,
+          targetY + cameraDistance * 0.35,
+          cameraDistance * 0.65
+        );
+        controlsRef.current.target.set(0, targetY, 0);
         controlsRef.current.update();
       },
     }));
@@ -83,9 +87,9 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       scene.background = new THREE.Color(backgroundColor);
       sceneRef.current = scene;
 
-      // 2. Camera
+      // 2. Camera (Posicionada cerca del origen)
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      camera.position.set(3, 2.5, 4);
+      camera.position.set(1.5, 1.2, 1.8);
       cameraRef.current = camera;
 
       // 3. Renderer
@@ -96,8 +100,9 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       });
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
+      renderer.toneMappingExposure = 1.15;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       rendererRef.current = renderer;
@@ -109,16 +114,19 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.screenSpacePanning = true;
-      controls.minDistance = 0.5;
+      controls.minDistance = 0.15;
       controls.maxDistance = 200;
       controls.maxPolarAngle = Math.PI / 2 + 0.1; // allow slightly below horizon
       controlsRef.current = controls;
 
-      // 5. Lights
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+      // 5. Lights (Balanced PBR Studio Lighting)
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x18233a, 1.4);
+      scene.add(hemiLight);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
       scene.add(ambientLight);
 
-      const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
+      const mainLight = new THREE.DirectionalLight(0xffffff, 2.2);
       mainLight.position.set(5, 10, 7);
       mainLight.castShadow = true;
       mainLight.shadow.mapSize.width = 2048;
@@ -126,11 +134,11 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       mainLight.shadow.bias = -0.0001;
       scene.add(mainLight);
 
-      const fillLight = new THREE.DirectionalLight(0x90b0ff, 0.8);
+      const fillLight = new THREE.DirectionalLight(0xffa07a, 0.7); // Subtle warm fill
       fillLight.position.set(-6, 3, -5);
       scene.add(fillLight);
 
-      const rimLight = new THREE.DirectionalLight(0xffeedd, 0.5);
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
       rimLight.position.set(0, -5, -5);
       scene.add(rimLight);
 
@@ -285,17 +293,18 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
 
           scene.add(model);
 
-          // Position camera so model fills view nicely regardless of model dimensions
+          // Position camera closer to model and origin (foco próximo al origen)
           const maxDim = Math.max(size.x, size.y, size.z);
           const fov = camera.fov * (Math.PI / 180);
           let cameraDistance = (maxDim / 2) / Math.tan(fov / 2);
-          cameraDistance = Math.max(cameraDistance * 1.6, 2.5);
+          cameraDistance = Math.max(cameraDistance * 0.75, 1.1);
 
-          const targetY = size.y / 2;
+          // Centrar el objetivo cerca del origen (base del modelo sobre y=0)
+          const targetY = Math.min(size.y * 0.25, 0.4);
           const newCamPos = new THREE.Vector3(
-            cameraDistance * 0.7,
-            targetY + cameraDistance * 0.4,
-            cameraDistance
+            cameraDistance * 0.55,
+            targetY + cameraDistance * 0.35,
+            cameraDistance * 0.65
           );
           const newTarget = new THREE.Vector3(0, targetY, 0);
 
