@@ -1,27 +1,31 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 /**
- * Generates an automatic 512x512 transparent PNG thumbnail from a .glb File in the browser using Three.js.
- * Operates off-screen and returns a Blob (or null if unsupported/failed).
+ * Generates an automatic 384x384 transparent PNG thumbnail from a .glb File in the browser using Three.js.
+ * Optimized with DRACOLoader support, fast off-screen rendering, and immediate WebGL garbage collection.
  */
 export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
   if (typeof window === "undefined") return null;
 
   return new Promise((resolve) => {
+    let url = "";
     try {
-      const url = URL.createObjectURL(file);
+      url = URL.createObjectURL(file);
       const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 512;
+      canvas.width = 384;
+      canvas.height = 384;
 
       const renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
         antialias: true,
         preserveDrawingBuffer: true,
+        powerPreference: "high-performance",
       });
-      renderer.setSize(512, 512);
+      renderer.setSize(384, 384);
+      renderer.setPixelRatio(1);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.15;
@@ -29,7 +33,7 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
       const scene = new THREE.Scene();
 
       // Balanced Studio Lights
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x18233a, 1.4);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 1.4);
       scene.add(hemiLight);
 
       const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
@@ -46,6 +50,28 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
       const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
 
       const loader = new GLTFLoader();
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+      loader.setDRACOLoader(dracoLoader);
+
+      const cleanup = () => {
+        if (url) URL.revokeObjectURL(url);
+        dracoLoader.dispose();
+        scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) {
+            obj.geometry?.dispose();
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            mats.forEach((m) => {
+              if (m) {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              }
+            });
+          }
+        });
+        renderer.dispose();
+      };
+
       loader.load(
         url,
         (gltf) => {
@@ -73,8 +99,7 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
 
           canvas.toBlob(
             (blob) => {
-              URL.revokeObjectURL(url);
-              renderer.dispose();
+              cleanup();
               resolve(blob);
             },
             "image/png"
@@ -83,15 +108,14 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
         undefined,
         (err) => {
           console.warn("Client thumbnail generation skipped on error:", err);
-          URL.revokeObjectURL(url);
-          renderer.dispose();
+          cleanup();
           resolve(null);
         }
       );
     } catch (e) {
       console.warn("Could not set up client thumbnail generator:", e);
+      if (url) URL.revokeObjectURL(url);
       resolve(null);
     }
   });
 }
-

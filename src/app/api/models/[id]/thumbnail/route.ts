@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getModelById, getModelFileSignedUrl, getModelFilePublicUrl } from "@/lib/services/modelService";
+import { getModelById, getModelFilePublicUrl } from "@/lib/services/modelService";
 
 export const dynamic = "force-dynamic";
 
@@ -18,19 +18,15 @@ export async function GET(
       );
     }
 
-    // 1. Direct thumbnail_url if available
-    if (model.thumbnail_url) {
-      return NextResponse.redirect(model.thumbnail_url, 307);
-    }
+    const targetUrl = model.thumbnail_url || (model.thumbnail_path ? getModelFilePublicUrl(model.thumbnail_path) : null);
 
-    // 2. If thumbnail_path exists, generate signed or public URL
-    if (model.thumbnail_path) {
-      const signedUrl = await getModelFileSignedUrl(model.thumbnail_path);
-      if (signedUrl) {
-        return NextResponse.redirect(signedUrl, 307);
-      }
-      const publicUrl = getModelFilePublicUrl(model.thumbnail_path);
-      return NextResponse.redirect(publicUrl, 307);
+    if (targetUrl) {
+      return NextResponse.redirect(targetUrl, {
+        status: 307,
+        headers: {
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+        },
+      });
     }
 
     return NextResponse.json(
@@ -45,4 +41,3 @@ export async function GET(
     );
   }
 }
-

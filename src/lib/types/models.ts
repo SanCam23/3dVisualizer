@@ -12,17 +12,11 @@ export type VersionStatus =
   | 'superseded' 
   | 'cleaned_up';
 
-export type JobStatus = 
-  | 'queued' 
-  | 'processing' 
-  | 'completed' 
-  | 'failed';
-
 export interface Model3D {
   id: string;
   name: string;
-  source_path: string;       // Storage path of .blend
-  viewer_path?: string | null; // Storage path of .glb
+  source_path: string;         // Storage path of native .glb
+  viewer_path?: string | null;   // Storage path of .glb
   thumbnail_path?: string | null;
   status: ModelStatus;
   version: number;
@@ -32,7 +26,7 @@ export interface Model3D {
   created_at: string;
   updated_at: string;
   
-  // Signed / computed URLs for client viewer and cards
+  // Direct public URLs for client viewer and cards
   viewer_url?: string | null;
   source_url?: string | null;
   thumbnail_url?: string | null;
@@ -50,20 +44,6 @@ export interface ModelVersion {
   created_at: string;
 }
 
-export interface ConversionJob {
-  id: string;
-  model_id: string;
-  version: number;
-  source_path: string;
-  target_path: string;
-  status: JobStatus;
-  attempts: number;
-  error_message?: string | null;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string | null;
-}
-
 export interface UploadPayload {
   name: string;
   file: File;
@@ -73,13 +53,3 @@ export interface UpdatePayload {
   model_id: string;
   file: File;
 }
-
-export interface SystemStatus {
-  isSupabaseConfigured: boolean;
-  supabaseUrl?: string;
-  isBlenderAvailable: boolean;
-  blenderPath?: string;
-  workerQueueCount: number;
-  environment: string;
-}
-

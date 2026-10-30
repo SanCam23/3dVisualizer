@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   transpilePackages: ['three'],
   images: {
     remotePatterns: [
@@ -13,4 +15,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getModelById, getModelFileSignedUrl } from "@/lib/services/modelService";
+import { getModelById, getModelFilePublicUrl } from "@/lib/services/modelService";
 
 export const dynamic = "force-dynamic";
 
@@ -18,15 +18,15 @@ export async function GET(
       );
     }
 
-    if (model.viewer_url) {
-      return NextResponse.redirect(model.viewer_url, 307);
-    }
+    const targetUrl = model.viewer_url || (model.viewer_path ? getModelFilePublicUrl(model.viewer_path) : null);
 
-    if (model.viewer_path) {
-      const signedUrl = await getModelFileSignedUrl(model.viewer_path);
-      if (signedUrl) {
-        return NextResponse.redirect(signedUrl, 307);
-      }
+    if (targetUrl) {
+      return NextResponse.redirect(targetUrl, {
+        status: 307,
+        headers: {
+          "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+        },
+      });
     }
 
     return NextResponse.json(
@@ -45,4 +45,3 @@ export async function GET(
     );
   }
 }
-

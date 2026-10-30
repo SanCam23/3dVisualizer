@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Model3D } from "@/lib/types/models";
 import { ModelCard } from "@/components/library/ModelCard";
 import { ModelSearchFilter } from "@/components/library/ModelSearchFilter";
@@ -9,7 +9,7 @@ import { UpdateModal } from "@/components/library/UpdateModal";
 import { DeleteModal } from "@/components/library/DeleteModal";
 import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { Button } from "@/components/ui/Button";
-import { Layers, RefreshCw, AlertCircle, Plus, Sparkles } from "lucide-react";
+import { Layers, RefreshCw, AlertCircle, Plus } from "lucide-react";
 
 export default function LibraryPage() {
   const [models, setModels] = useState<Model3D[]>([]);
@@ -28,11 +28,7 @@ export default function LibraryPage() {
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("q", searchQuery);
-      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
-
-      const res = await fetch(`/api/models?${params.toString()}`);
+      const res = await fetch("/api/models");
       const data = await res.json();
 
       if (!res.ok) {
@@ -45,13 +41,23 @@ export default function LibraryPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, statusFilter]);
+  }, []);
 
   useEffect(() => {
     fetchModels();
   }, [fetchModels]);
 
-  // Statistics calculation
+  // Client-side instant filtering (0ms network latency, no flickering)
+  const filteredModels = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return models.filter((m) => {
+      const matchesSearch = !q || m.name.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === "all" || m.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [models, searchQuery, statusFilter]);
+
+  // Statistics calculation (based on complete library)
   const totalModels = models.length;
   const availableCount = models.filter((m) => m.status === "available").length;
   const processingCount = models.filter(
@@ -128,9 +134,9 @@ export default function LibraryPage() {
       )}
 
       {/* Models Grid */}
-      {!isLoading && !errorMessage && models.length > 0 && (
+      {!isLoading && !errorMessage && filteredModels.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {models.map((model) => (
+          {filteredModels.map((model) => (
             <ModelCard
               key={model.id}
               model={model}
@@ -147,7 +153,7 @@ export default function LibraryPage() {
       )}
 
       {/* Empty State when no models match search */}
-      {!isLoading && !errorMessage && models.length === 0 && searchQuery && (
+      {!isLoading && !errorMessage && filteredModels.length === 0 && (searchQuery || statusFilter !== "all") && (
         <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-border bg-white shadow-sm flex flex-col items-center">
           <div className="p-4 rounded-2xl bg-[#FFF1EA] mb-3">
             <CheatCookLogo className="w-10 h-10 opacity-70" />
@@ -156,7 +162,9 @@ export default function LibraryPage() {
             No se encontraron modelos
           </h3>
           <p className="text-xs text-[#64748B] max-w-sm mt-1 mb-5">
-            No hay ningún modelo que coincida con el término &ldquo;{searchQuery}&rdquo;.
+            {searchQuery
+              ? `No hay ningún modelo que coincida con el término "${searchQuery}".`
+              : "No hay ningún modelo con el filtro de estado seleccionado."}
           </p>
           <Button
             variant="outline"
@@ -172,7 +180,7 @@ export default function LibraryPage() {
       )}
 
       {/* Empty State when library is empty (Brand Cheat Cook) */}
-      {!isLoading && !errorMessage && models.length === 0 && !searchQuery && (
+      {!isLoading && !errorMessage && models.length === 0 && !searchQuery && statusFilter === "all" && (
         <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-[#FF6433]/30 bg-gradient-to-b from-[#FFF1EA]/80 to-[#FFF8F4] flex flex-col items-center shadow-sm">
           <div className="relative mb-5 p-4 rounded-3xl bg-[#FFF1EA] border border-[#FF6433]/30 shadow-[0_4px_20px_rgba(255,100,51,0.15)]">
             <CheatCookLogo className="w-16 h-16 drop-shadow-sm" />

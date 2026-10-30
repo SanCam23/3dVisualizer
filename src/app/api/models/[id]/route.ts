@@ -45,7 +45,7 @@ export async function PATCH(
       );
     }
 
-    const model = await updateModelStatus(id, status, true);
+    const model = await updateModelStatus(id, status);
     return NextResponse.json({ success: true, model });
   } catch (err: unknown) {
     console.error("API PATCH /api/models/[id] error:", err);
