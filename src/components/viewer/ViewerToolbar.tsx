@@ -83,32 +83,32 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
 
   return (
     <>
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-[#0B1220]/95 via-[#0B1220]/75 to-transparent backdrop-blur-[3px]">
+      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-[#FFF8F4]/95 via-[#FFF8F4]/80 to-transparent backdrop-blur-[4px] border-b border-[#F0E4DD]/60">
         {/* Left: Back & Title */}
         <div className="flex items-center gap-3">
           <Link href="/">
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 bg-[#121B2D]/80 backdrop-blur-md border-border text-white hover:bg-secondary font-medium"
+              className="gap-2 bg-white/90 backdrop-blur-md border-[#F0E4DD] text-[#0F172A] hover:bg-[#FFF1EA] font-medium shadow-xs"
             >
-              <ArrowLeft className="w-4 h-4 text-[#FF7A50]" />
+              <ArrowLeft className="w-4 h-4 text-[#FF6433]" />
               <span className="hidden sm:inline">Biblioteca 3D</span>
             </Button>
           </Link>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center justify-center p-2 rounded-2xl bg-[#FF6433]/20 border border-[#FF6433]/35 shadow-sm">
+            <div className="hidden sm:flex items-center justify-center p-2 rounded-2xl bg-[#FFF1EA] border border-[#FF6433]/30 shadow-xs">
               <CheatCookLogo className="w-7 h-7" />
             </div>
 
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="font-black text-lg sm:text-xl text-white tracking-tight drop-shadow-sm">
+                <h1 className="font-black text-lg sm:text-xl text-[#0F172A] tracking-tight">
                   {model.name}
                 </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#18233A] px-2.5 py-0.5 text-xs font-mono font-semibold text-white border border-border">
-                  <Layers className="w-3 h-3 text-[#FF7A50]" />
+                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 text-xs font-mono font-semibold text-[#0F172A] border border-[#F0E4DD] shadow-xs">
+                  <Layers className="w-3 h-3 text-[#FF6433]" />
                   v{model.version}
                 </span>
                 <button
@@ -126,14 +126,14 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
                     status={currentStatus}
                     className={
                       currentStatus === "available"
-                        ? "hover:ring-2 hover:ring-amber-400/60 hover:shadow-[0_0_12px_rgba(251,191,36,0.35)] transition-all cursor-pointer"
-                        : "hover:ring-2 hover:ring-emerald-400/60 hover:shadow-[0_0_12px_rgba(52,211,153,0.35)] transition-all cursor-pointer"
+                        ? "hover:ring-2 hover:ring-amber-400/60 hover:shadow-[0_0_12px_rgba(251,191,36,0.25)] transition-all cursor-pointer"
+                        : "hover:ring-2 hover:ring-emerald-400/60 hover:shadow-[0_0_12px_rgba(52,211,153,0.25)] transition-all cursor-pointer"
                     }
                   />
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-[#8391A9] mt-0.5 font-medium">
+              <div className="flex items-center gap-3 text-xs text-[#64748B] mt-0.5 font-medium">
                 <span>Actualizado: {formatDate(model.updated_at)}</span>
                 {model.file_size ? (
                   <span className="hidden md:inline-flex items-center gap-1">
@@ -142,7 +142,7 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
                   </span>
                 ) : null}
                 {meshStats ? (
-                  <span className="hidden lg:inline-flex items-center gap-1 font-mono text-[11px] text-[#A7B3C6]">
+                  <span className="hidden lg:inline-flex items-center gap-1 font-mono text-[11px] text-[#475569]">
                     • {meshStats.meshCount} mallas / {meshStats.vertexCount.toLocaleString()} vértices
                   </span>
                 ) : null}
@@ -158,11 +158,11 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
               variant="outline"
               size="sm"
               onClick={handleOpenDownload}
-              className="gap-1.5 bg-[#121B2D]/80 backdrop-blur-md text-xs border-border text-white hover:border-[#FF6433]/50 font-semibold"
+              className="gap-1.5 bg-white/90 backdrop-blur-md text-xs border-[#F0E4DD] text-[#0F172A] hover:bg-[#FFF1EA] hover:border-[#FF6433]/50 font-semibold shadow-xs"
               title="Descargar archivo GLB compilado (Requiere autorización)"
             >
-              <Lock className="w-3.5 h-3.5 text-[#FF7A50]" />
-              <Download className="w-3.5 h-3.5 text-[#FF7A50]" />
+              <Lock className="w-3.5 h-3.5 text-[#FF6433]" />
+              <Download className="w-3.5 h-3.5 text-[#FF6433]" />
               <span className="hidden sm:inline">Descargar .glb</span>
             </Button>
           )}
@@ -173,19 +173,19 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
       <Dialog open={isAuthOpen} onOpenChange={setIsAuthOpen}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#FF6433]/20 border border-[#FF6433]/30">
-              <Lock className="w-5 h-5 text-[#FF7A50]" />
+            <div className="p-2 rounded-xl bg-[#FFF1EA] border border-[#FF6433]/30">
+              <Lock className="w-5 h-5 text-[#FF6433]" />
             </div>
             Descarga protegida de modelo 3D
           </DialogTitle>
           <DialogDescription>
-            Introduce la contraseña de acceso autorizada para descargar el archivo <strong className="text-white font-mono">{model.name}.glb</strong>.
+            Introduce la contraseña de acceso autorizada para descargar el archivo <strong className="text-[#0F172A] font-mono">{model.name}.glb</strong>.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleVerifyAndDownload} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-white">
+            <label className="text-xs font-semibold text-[#0F172A]">
               Contraseña de descarga
             </label>
             <Input
@@ -194,21 +194,21 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
               disabled={authSuccess}
-              className="rounded-xl bg-[#0B1220]/70 border-border focus-visible:ring-[#FF6433]"
+              className="rounded-xl bg-[#FFF8F4] border-[#F0E4DD] text-[#0F172A] placeholder:text-[#94A3B8] focus-visible:ring-[#FF6433]"
               autoFocus
             />
           </div>
 
           {authError && (
-            <div className="flex items-center gap-2 p-3 text-xs text-rose-300 bg-rose-500/15 border border-rose-500/25 rounded-xl animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{authError}</span>
             </div>
           )}
 
           {authSuccess && (
-            <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 rounded-xl animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <div className="flex items-center gap-2 p-3 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
               <span>Contraseña correcta. Iniciando descarga del archivo...</span>
             </div>
           )}
@@ -225,7 +225,7 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
             <Button
               type="submit"
               disabled={!passwordInput || authSuccess}
-              className="gap-2 font-semibold"
+              className="gap-2 font-semibold shadow-md shadow-[#FF6433]/20"
             >
               <Download className="w-4 h-4" />
               Confirmar y descargar

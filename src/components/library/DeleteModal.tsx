@@ -60,33 +60,33 @@ export function DeleteModal({ model, open, onOpenChange, onDeleteSuccess }: Dele
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2 text-rose-400">
-          <AlertTriangle className="w-5 h-5 text-rose-500" />
+        <DialogTitle className="flex items-center gap-2 text-rose-600">
+          <AlertTriangle className="w-5 h-5 text-rose-600" />
           ¿Eliminar modelo de Cheat Cook?
         </DialogTitle>
         <DialogDescription>
-          Esta acción eliminará de forma irreversible el modelo <strong className="text-white font-semibold">{model.name}</strong>, incluyendo todas sus versiones históricas (.blend y .glb) de Supabase Storage.
+          Esta acción eliminará de forma irreversible el modelo <strong className="text-[#0F172A] font-semibold">{model.name}</strong>, incluyendo todos sus archivos .glb y miniaturas de Supabase Storage.
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-3 py-2">
-        <div className="p-3.5 bg-rose-500/10 border border-rose-500/25 rounded-2xl text-xs space-y-1.5">
-          <div className="font-semibold text-rose-300">Archivos que se eliminarán del almacenamiento:</div>
-          <ul className="list-disc list-inside text-[#A7B3C6] font-mono space-y-0.5">
-            <li>{model.source_path || "Archivo original .blend"}</li>
+        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs space-y-1.5">
+          <div className="font-semibold text-rose-800">Archivos que se eliminarán del almacenamiento:</div>
+          <ul className="list-disc list-inside text-[#475569] font-mono space-y-0.5">
+            <li>{model.source_path || "Archivo 3D .glb"}</li>
             {model.viewer_path && <li>{model.viewer_path}</li>}
           </ul>
         </div>
 
         {errorMessage && (
-          <div className="p-3 text-xs text-rose-300 bg-rose-500/20 border border-rose-500/35 rounded-xl">
+          <div className="p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl">
             {errorMessage}
           </div>
         )}
 
         {isDone && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/20 border border-emerald-500/35 rounded-xl">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="flex items-center gap-2 p-3 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>Modelo y almacenamiento eliminados exitosamente.</span>
           </div>
         )}

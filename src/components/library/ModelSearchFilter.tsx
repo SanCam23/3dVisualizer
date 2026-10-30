@@ -23,7 +23,7 @@ export function ModelSearchFilter({
   totalModels,
 }: ModelSearchFilterProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-[#121B2D]/70 backdrop-blur-sm p-4 rounded-2xl border border-border shadow-sm">
+    <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white p-4 rounded-2xl border border-border shadow-sm">
       {/* Search Bar */}
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8391A9] pointer-events-none" />
@@ -32,12 +32,12 @@ export function ModelSearchFilter({
           placeholder="Buscar modelos por nombre..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 pr-8 bg-[#0B1220]/60 border-border text-sm rounded-full focus-visible:ring-[#FF6433]"
+          className="pl-10 pr-8 bg-[#FFF8F4] border-border text-sm text-[#0F172A] placeholder:text-[#94A3B8] rounded-full focus-visible:ring-[#FF6433]"
         />
         {searchQuery && (
           <button
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8391A9] hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8391A9] hover:text-[#0F172A]"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -47,23 +47,23 @@ export function ModelSearchFilter({
       {/* Filter and Action Buttons */}
       <div className="flex items-center gap-3">
         {/* Status Filter */}
-        <div className="flex items-center gap-2 bg-[#0B1220]/60 border border-border rounded-full px-3.5 py-1.5">
-          <Filter className="w-3.5 h-3.5 text-[#FF7A50]" />
+        <div className="flex items-center gap-2 bg-[#FFF8F4] border border-border rounded-full px-3.5 py-1.5">
+          <Filter className="w-3.5 h-3.5 text-[#FF6433]" />
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="bg-transparent text-xs font-medium text-white focus:outline-none cursor-pointer"
+            className="bg-transparent text-xs font-medium text-[#0F172A] focus:outline-none cursor-pointer"
           >
-            <option value="all" className="bg-[#121B2D] text-white">Todos los estados</option>
-            <option value="available" className="bg-[#121B2D] text-white">Disponibles</option>
-            <option value="processing" className="bg-[#121B2D] text-white">En procesamiento</option>
-            <option value="updating" className="bg-[#121B2D] text-white">Actualizando</option>
-            <option value="error" className="bg-[#121B2D] text-white">Con error</option>
+            <option value="all" className="bg-white text-[#0F172A]">Todos los estados</option>
+            <option value="available" className="bg-white text-[#0F172A]">Disponibles</option>
+            <option value="processing" className="bg-white text-[#0F172A]">En procesamiento</option>
+            <option value="updating" className="bg-white text-[#0F172A]">Actualizando</option>
+            <option value="error" className="bg-white text-[#0F172A]">Con error</option>
           </select>
         </div>
 
         {/* Counter badge */}
-        <span className="hidden sm:inline-block text-xs font-mono font-medium text-[#8391A9] border-l border-border pl-3">
+        <span className="hidden sm:inline-block text-xs font-mono font-medium text-[#64748B] border-l border-border pl-3">
           {totalModels} {totalModels === 1 ? "modelo" : "modelos"}
         </span>
 

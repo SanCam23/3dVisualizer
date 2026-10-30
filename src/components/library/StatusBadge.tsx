@@ -14,28 +14,28 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     case "available":
       return (
         <Badge variant="success" className={cn("gap-1.5 font-semibold", className)}>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
           <span>Disponible</span>
         </Badge>
       );
     case "processing":
       return (
         <Badge variant="warning" className={cn("gap-1.5 font-semibold", className)}>
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
           <span>En proceso</span>
         </Badge>
       );
     case "updating":
       return (
         <Badge variant="default" className={cn("gap-1.5 font-semibold", className)}>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF7A50]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6433]" />
           <span>Actualizando</span>
         </Badge>
       );
     case "error":
       return (
         <Badge variant="destructive" className={cn("gap-1.5 font-semibold", className)}>
-          <AlertCircle className="w-3 h-3 text-rose-400" />
+          <AlertCircle className="w-3 h-3 text-rose-600" />
           <span>Error</span>
         </Badge>
       );
@@ -43,7 +43,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     default:
       return (
         <Badge variant="secondary" className={cn("gap-1.5 font-semibold", className)}>
-          <Clock className="w-3 h-3 text-[#8391A9]" />
+          <Clock className="w-3 h-3 text-[#64748B]" />
           <span>Pendiente de subida</span>
         </Badge>
       );

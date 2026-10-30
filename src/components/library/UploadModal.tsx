@@ -156,7 +156,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Model Name */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-white">
+          <label className="text-xs font-semibold text-[#0F172A]">
             Nombre del modelo
           </label>
           <Input
@@ -164,9 +164,9 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
             value={modelName}
             onChange={(e) => setModelName(e.target.value)}
             disabled={isSubmitting}
-            className="rounded-xl bg-[#0B1220]/70 border-border focus-visible:ring-[#FF6433]"
+            className="rounded-xl bg-[#FFF8F4] border-[#F0E4DD] text-[#0F172A] placeholder:text-[#94A3B8] focus-visible:ring-[#FF6433]"
           />
-          <span className="text-[11px] text-[#8391A9]">
+          <span className="text-[11px] text-[#64748B]">
             Si se deja en blanco, se utilizará el nombre del archivo.
           </span>
         </div>
@@ -182,10 +182,10 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
           onClick={() => !file && fileInputRef.current?.click()}
           className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[160px] ${
             isDragging
-              ? "border-[#FF6433] bg-[#FF6433]/15 scale-[1.01]"
+              ? "border-[#FF6433] bg-[#FF6433]/10 scale-[1.01]"
               : file
-              ? "border-emerald-500/50 bg-emerald-500/10"
-              : "border-border hover:border-[#FF6433]/50 bg-[#0B1220]/40"
+              ? "border-emerald-500/50 bg-emerald-50"
+              : "border-[#F0E4DD] hover:border-[#FF6433]/50 bg-[#FFF8F4]/70"
           }`}
         >
           <input
@@ -203,9 +203,9 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
 
           {file ? (
             <div className="flex flex-col items-center">
-              <FileBox className="w-10 h-10 text-emerald-400 mb-2" />
-              <div className="text-sm font-bold text-white">{file.name}</div>
-              <div className="text-xs text-[#8391A9] mt-0.5">
+              <FileBox className="w-10 h-10 text-emerald-600 mb-2" />
+              <div className="text-sm font-bold text-[#0F172A]">{file.name}</div>
+              <div className="text-xs text-[#64748B] mt-0.5">
                 {formatBytes(file.size)}
               </div>
               <button
@@ -215,18 +215,18 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
                   setFile(null);
                 }}
                 disabled={isSubmitting}
-                className="mt-3 inline-flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300"
+                className="mt-3 inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 font-medium"
               >
                 <X className="w-3.5 h-3.5" /> Quitar archivo
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <UploadCloud className="w-10 h-10 text-[#FF7A50] mb-2" />
-              <div className="text-sm font-semibold text-white">
-                Arrastra tu archivo <span className="font-mono text-[#FF7A50]">.glb</span> aquí
+              <UploadCloud className="w-10 h-10 text-[#FF6433] mb-2" />
+              <div className="text-sm font-semibold text-[#0F172A]">
+                Arrastra tu archivo <span className="font-mono text-[#C2410C]">.glb</span> aquí
               </div>
-              <div className="text-xs text-[#8391A9] mt-1">
+              <div className="text-xs text-[#64748B] mt-1">
                 o haz clic para explorar tus archivos (hasta 250 MB)
               </div>
             </div>
@@ -236,11 +236,11 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
         {/* Progress Bar */}
         {isSubmitting && (
           <div className="space-y-1.5 animate-in fade-in">
-            <div className="flex justify-between text-xs text-[#A7B3C6]">
+            <div className="flex justify-between text-xs text-[#475569]">
               <span>Subiendo archivo y procesando miniatura...</span>
-              <span className="font-mono font-semibold text-[#FF7A50]">{uploadProgress}%</span>
+              <span className="font-mono font-semibold text-[#C2410C]">{uploadProgress}%</span>
             </div>
-            <div className="w-full bg-[#18233A] h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-[#F0E4DD] h-2 rounded-full overflow-hidden">
               <div
                 className="bg-[#FF6433] h-full transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress}%` }}
@@ -251,16 +251,16 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
 
         {/* Error message */}
         {errorMessage && (
-          <div className="flex items-center gap-2 p-3 text-xs text-rose-300 bg-rose-500/15 border border-rose-500/25 rounded-xl">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {/* Success message */}
         {successNotice && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-300 bg-emerald-500/15 border border-emerald-500/25 rounded-xl">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="flex items-center gap-2 p-3 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{successNotice}</span>
           </div>
         )}
@@ -278,7 +278,7 @@ export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModal
             type="submit"
             isLoading={isSubmitting}
             disabled={!file || isSubmitting}
-            className="gap-2 font-semibold"
+            className="gap-2 font-semibold shadow-md shadow-[#FF6433]/20"
           >
             Subir modelo .glb
           </Button>

@@ -83,20 +83,20 @@ export function ModelViewer({ model }: ModelViewerProps) {
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-          <div className="p-4 rounded-3xl bg-secondary/80 border border-border mb-4 shadow-lg">
-            <CheatCookLogo className="w-14 h-14 opacity-60 animate-pulse" />
+          <div className="p-4 rounded-3xl bg-[#FFF1EA] border border-[#F0E4DD] mb-4 shadow-sm">
+            <CheatCookLogo className="w-14 h-14 opacity-70 animate-pulse" />
           </div>
-          <h2 className="text-lg font-bold text-white">
+          <h2 className="text-lg font-bold text-[#0F172A]">
             Archivo .glb no disponible todavía
           </h2>
-          <p className="text-xs text-[#A7B3C6] max-w-md mt-1.5 mb-6 leading-relaxed">
+          <p className="text-xs text-[#475569] max-w-md mt-1.5 mb-6 leading-relaxed">
             {model.status === "processing"
-              ? "El archivo original .blend está en cola de procesamiento o convirtiéndose actualmente con Blender headless."
+              ? "El archivo .glb se está subiendo o procesando."
               : model.status === "updating"
               ? "Se está procesando una actualización para este modelo."
               : model.status === "error"
-              ? `Ocurrió un error en la conversión: ${model.last_error || "Desconocido"}`
-              : "El modelo no tiene un visor compilado asociado."}
+              ? `Ocurrió un error: ${model.last_error || "Desconocido"}`
+              : "El modelo no tiene un archivo .glb compilado asociado."}
           </p>
           <Link href="/">
             <Button variant="outline" className="font-medium">Volver a la biblioteca 3D</Button>

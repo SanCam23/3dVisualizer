@@ -63,34 +63,34 @@ export default function LibraryPage() {
       {/* Top Title & Stats Banner */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] flex items-center gap-2.5">
             <Layers className="w-7 h-7 text-[#FF6433]" />
             Biblioteca de Modelos 3D
           </h1>
-          <p className="text-sm text-[#A7B3C6] mt-1.5 max-w-2xl leading-relaxed">
-            Sube tus modelos en formato 3D nativo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.glb</span> con materiales y texturas integradas. Visualización interactiva inmediata en el visor 3D de Cheat Cook.
+          <p className="text-sm text-[#475569] mt-1.5 max-w-2xl leading-relaxed">
+            Sube tus modelos en formato 3D nativo <span className="font-mono text-[#C2410C] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded-md">.glb</span> con materiales y texturas integradas. Visualización interactiva inmediata en el visor 3D de Cheat Cook.
           </p>
         </div>
 
         {/* Quick Stats Counters */}
         <div className="flex items-center gap-2.5 text-xs">
-          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
-            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+          <div className="px-3.5 py-2 rounded-2xl bg-white border border-border shadow-sm">
+            <span className="text-[#64748B] block text-[10px] uppercase font-mono tracking-wider font-semibold">
               Disponibles
             </span>
-            <span className="font-extrabold text-emerald-400 text-base">{availableCount}</span>
+            <span className="font-extrabold text-emerald-600 text-base">{availableCount}</span>
           </div>
-          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
-            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+          <div className="px-3.5 py-2 rounded-2xl bg-white border border-border shadow-sm">
+            <span className="text-[#64748B] block text-[10px] uppercase font-mono tracking-wider font-semibold">
               En proceso
             </span>
-            <span className="font-extrabold text-amber-400 text-base">{processingCount}</span>
+            <span className="font-extrabold text-amber-600 text-base">{processingCount}</span>
           </div>
-          <div className="px-3.5 py-2 rounded-2xl bg-card border border-border shadow-sm">
-            <span className="text-[#8391A9] block text-[10px] uppercase font-mono tracking-wider font-semibold">
+          <div className="px-3.5 py-2 rounded-2xl bg-white border border-border shadow-sm">
+            <span className="text-[#64748B] block text-[10px] uppercase font-mono tracking-wider font-semibold">
               Total Activos
             </span>
-            <span className="font-extrabold text-white text-base">{totalModels}</span>
+            <span className="font-extrabold text-[#0F172A] text-base">{totalModels}</span>
           </div>
         </div>
       </div>
@@ -148,14 +148,14 @@ export default function LibraryPage() {
 
       {/* Empty State when no models match search */}
       {!isLoading && !errorMessage && models.length === 0 && searchQuery && (
-        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-border bg-card/30 flex flex-col items-center">
-          <div className="p-4 rounded-2xl bg-secondary mb-3">
-            <CheatCookLogo className="w-10 h-10 opacity-40" />
+        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-border bg-white shadow-sm flex flex-col items-center">
+          <div className="p-4 rounded-2xl bg-[#FFF1EA] mb-3">
+            <CheatCookLogo className="w-10 h-10 opacity-70" />
           </div>
-          <h3 className="font-bold text-white text-base">
+          <h3 className="font-bold text-[#0F172A] text-base">
             No se encontraron modelos
           </h3>
-          <p className="text-xs text-[#8391A9] max-w-sm mt-1 mb-5">
+          <p className="text-xs text-[#64748B] max-w-sm mt-1 mb-5">
             No hay ningún modelo que coincida con el término &ldquo;{searchQuery}&rdquo;.
           </p>
           <Button
@@ -173,15 +173,15 @@ export default function LibraryPage() {
 
       {/* Empty State when library is empty (Brand Cheat Cook) */}
       {!isLoading && !errorMessage && models.length === 0 && !searchQuery && (
-        <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-[#FF6433]/30 bg-gradient-to-b from-[#121B2D]/90 to-[#0B1220]/90 backdrop-blur-sm flex flex-col items-center shadow-lg">
-          <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-[#FF6433]/20 via-[#FF6433]/10 to-transparent border border-[#FF6433]/30 shadow-[0_0_30px_rgba(255,100,51,0.2)]">
-            <CheatCookLogo className="w-16 h-16 drop-shadow-md" />
+        <div className="text-center py-20 px-4 rounded-3xl border border-dashed border-[#FF6433]/30 bg-gradient-to-b from-[#FFF1EA]/80 to-[#FFF8F4] flex flex-col items-center shadow-sm">
+          <div className="relative mb-5 p-4 rounded-3xl bg-[#FFF1EA] border border-[#FF6433]/30 shadow-[0_4px_20px_rgba(255,100,51,0.15)]">
+            <CheatCookLogo className="w-16 h-16 drop-shadow-sm" />
           </div>
-          <h3 className="font-extrabold text-white text-xl tracking-tight">
+          <h3 className="font-extrabold text-[#0F172A] text-xl tracking-tight">
             La biblioteca 3D de Cheat Cook está vacía
           </h3>
-          <p className="text-sm text-[#A7B3C6] max-w-md mt-2 mb-7 leading-relaxed">
-            Comienza subiendo tu primer archivo <span className="font-mono text-[#FF7A50] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.glb</span> compilado. Estará disponible de inmediato con su miniatura para visualizarlo interactivamente.
+          <p className="text-sm text-[#475569] max-w-md mt-2 mb-7 leading-relaxed">
+            Comienza subiendo tu primer archivo <span className="font-mono text-[#C2410C] font-semibold bg-[#FF6433]/10 px-1.5 py-0.5 rounded">.glb</span> compilado. Estará disponible de inmediato con su miniatura para visualizarlo interactivamente.
           </p>
           <Button
             onClick={() => setIsUploadOpen(true)}

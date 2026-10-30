@@ -26,7 +26,7 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       modelUrl,
       wireframe = false,
       showGrid = true,
-      backgroundColor = "#121316",
+      backgroundColor = "#FFF8F4",
       onProgress,
       onError,
       onLoaded,
@@ -120,7 +120,7 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       controlsRef.current = controls;
 
       // 5. Lights (Balanced PBR Studio Lighting)
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x18233a, 1.4);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 1.4);
       scene.add(hemiLight);
 
       const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
@@ -142,8 +142,8 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       rimLight.position.set(0, -5, -5);
       scene.add(rimLight);
 
-      // 6. Floor Grid Helper (Cheat Cook Coral axis + dark slate lines)
-      const grid = new THREE.GridHelper(20, 40, 0xff6433, 0x25324b);
+      // 6. Floor Grid Helper (Cheat Cook Coral axis + warm subtle grid lines)
+      const grid = new THREE.GridHelper(20, 40, 0xff6433, 0xe2d6cf);
       grid.position.y = 0;
       scene.add(grid);
       gridRef.current = grid;

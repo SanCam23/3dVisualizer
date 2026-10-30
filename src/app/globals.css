@@ -6,50 +6,50 @@
 
 @layer base {
   :root {
-    /* Cheat Cook Dark Theme (Default) */
+    /* Cheat Cook Light Theme (Default) */
+    --background: 24 100% 98%;         /* #FFF8F4 (Crema cálido Cheat Cook) */
+    --foreground: 222 47% 11%;         /* #0F172A (Texto slate oscuro) */
+    --card: 0 0% 100%;                 /* #FFFFFF (Superficie blanca) */
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 14 100% 60%;            /* #FF6433 (Coral Cheat Cook) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 100% 96%;          /* #FFF1EA (Tintado cálido suave) */
+    --secondary-foreground: 222 47% 11%;
+    --muted: 24 33% 94%;               /* #F7EFEA */
+    --muted-foreground: 215 16% 47%;   /* #64748B */
+    --accent: 14 100% 60%;             /* #FF6433 */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 349 89% 41%;        /* #BE123C */
+    --destructive-foreground: 0 0% 100%;
+    --border: 24 43% 91%;              /* #F0E4DD (Borde cálido suave) */
+    --input: 24 43% 91%;
+    --ring: 14 100% 60%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    /* Cheat Cook Dark Theme (Opcional) */
     --background: 220 49% 8.5%;        /* #0B1220 */
     --foreground: 210 40% 96%;        /* #F1F5F9 */
     --card: 220 43% 12.5%;             /* #121B2D */
     --card-foreground: 210 40% 96%;
     --popover: 220 43% 12.5%;
     --popover-foreground: 210 40% 96%;
-    --primary: 14 100% 65%;            /* #FF7A50 (Coral Cheat Cook) */
-    --primary-foreground: 18 80% 6%;   /* #1B0A03 */
+    --primary: 14 100% 65%;            /* #FF7A50 */
+    --primary-foreground: 18 80% 6%;
     --secondary: 221 41% 16%;          /* #18233A */
     --secondary-foreground: 217 21% 80%;
     --muted: 221 34% 18%;
-    --muted-foreground: 218 18% 65%;   /* #8391A9 */
-    --accent: 14 100% 65%;             /* #FF7A50 */
+    --muted-foreground: 218 18% 65%;
+    --accent: 14 100% 65%;
     --accent-foreground: 18 80% 6%;
-    --destructive: 349 95% 71%;        /* #FB7185 */
+    --destructive: 349 95% 71%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 34% 22%;             /* #25324B */
+    --border: 220 34% 22%;
     --input: 220 34% 22%;
     --ring: 14 100% 65%;
-    --radius: 1rem;
-  }
-
-  .light {
-    /* Cheat Cook Light Theme */
-    --background: 24 100% 98%;         /* #FFF8F4 (Crema cálido) */
-    --foreground: 222 47% 11%;         /* #0F172A */
-    --card: 0 0% 100%;                 /* #FFFFFF */
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 17 88% 40%;             /* #C2410C (Coral 700 para contraste AA) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 20 100% 96%;          /* #FFF1EA */
-    --secondary-foreground: 222 47% 11%;
-    --muted: 24 33% 94%;
-    --muted-foreground: 215 16% 47%;   /* #64748B */
-    --accent: 14 100% 60%;             /* #FF6433 */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 349 89% 41%;        /* #BE123C */
-    --destructive-foreground: 0 0% 100%;
-    --border: 24 43% 91%;              /* #F0E4DD */
-    --input: 24 43% 91%;
-    --ring: 14 100% 60%;
   }
 }
 
@@ -60,8 +60,8 @@
 body {
   background-color: hsl(var(--background));
   background-image: 
-    radial-gradient(900px 420px at 100% -10%, rgba(255, 100, 51, 0.12), transparent 60%),
-    radial-gradient(700px 380px at -10% 110%, rgba(47, 148, 99, 0.10), transparent 55%);
+    radial-gradient(900px 420px at 100% -10%, rgba(255, 100, 51, 0.08), transparent 60%),
+    radial-gradient(700px 380px at -10% 110%, rgba(47, 148, 99, 0.06), transparent 55%);
   background-attachment: fixed;
   color: hsl(var(--foreground));
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;

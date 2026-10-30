@@ -6,11 +6,17 @@ const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "models3d";
 // In-memory store for local demo/fallback when Supabase is not yet connected
 let mockModels: Model3D[] = [];
 
+export function getModelFilePublicUrl(path: string): string {
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://qgmknxajjfredukqiyfs.supabase.co";
+  const baseUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/i, "").replace(/\/+$/, "");
+  return `${baseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
+}
+
 export async function getModelFileSignedUrl(path: string): Promise<string | null> {
   if (!path) return null;
   const supabase = createServerClient();
   if (!supabase) {
-    return null;
+    return getModelFilePublicUrl(path);
   }
 
   try {
@@ -20,16 +26,13 @@ export async function getModelFileSignedUrl(path: string): Promise<string | null
       .createSignedUrl(path, 3600);
 
     if (error || !data?.signedUrl) {
-      // Fallback: check public URL if bucket is public
-      const { data: pubData } = supabase.storage
-        .from(STORAGE_BUCKET)
-        .getPublicUrl(path);
-      return pubData.publicUrl;
+      // Fallback: check public URL since models3d bucket has public access
+      return getModelFilePublicUrl(path);
     }
     return data.signedUrl;
   } catch (err) {
-    console.error("Error creating signed URL for:", path, err);
-    return null;
+    console.warn("Signed URL error, falling back to public storage URL:", err);
+    return getModelFilePublicUrl(path);
   }
 }
 

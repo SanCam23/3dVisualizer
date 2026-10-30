@@ -35,15 +35,15 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in-0 duration-200">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#02060E]/75 backdrop-blur-sm"
+        className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
       {/* Content Container */}
-      <div className="relative z-50 w-full max-w-lg rounded-3xl border border-border bg-[#121B2D] p-6 sm:p-7 shadow-[0_28px_70px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200">
+      <div className="relative z-50 w-full max-w-lg rounded-3xl border border-[#F0E4DD] bg-white p-6 sm:p-7 shadow-[0_28px_70px_rgba(60,24,8,0.16)] text-[#0F172A] animate-in zoom-in-95 duration-200">
         {children}
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute right-5 top-5 rounded-full p-1.5 text-[#8391A9] hover:text-white hover:bg-[#18233A] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF6433]"
+          className="absolute right-5 top-5 rounded-full p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#FFF1EA] transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF6433]"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Cerrar</span>
@@ -75,7 +75,7 @@ export function DialogTitle({
   return (
     <h2
       className={cn(
-        "text-lg font-bold leading-tight tracking-tight text-white",
+        "text-lg font-bold leading-tight tracking-tight text-[#0F172A]",
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ export function DialogDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-xs text-[#A7B3C6] leading-relaxed", className)}
+      className={cn("text-xs text-[#475569] leading-relaxed", className)}
       {...props}
     />
   );

@@ -18,7 +18,13 @@ interface ModelCardProps {
 
 export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCardProps) {
   const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const isUpdating = model.status === "updating";
+
+  // Robust thumbnail resolution: signed URL, dedicated API proxy, or Supabase public storage
+  const thumbnailSrc = !imageError
+    ? model.thumbnail_url || (model.thumbnail_path ? `/api/models/${model.id}/thumbnail` : null)
+    : null;
 
   const handleToggleStatus = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,23 +65,23 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border bg-[#121B2D]/80 backdrop-blur-sm transition-all duration-300 hover:border-[#FF6433]/50 hover:shadow-[0_8px_24px_rgba(255,100,51,0.12)] overflow-hidden">
-      {/* 3D Preview / Thumbnail Area */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-b from-[#18233A] to-[#0F1828] flex items-center justify-center border-b border-border">
-        {(model.thumbnail_url || model.thumbnail_path) ? (
+    <div className="group relative flex flex-col rounded-2xl border border-[#F0E4DD] bg-white shadow-[0_4px_16px_rgba(60,24,8,0.06)] transition-all duration-300 hover:border-[#FF6433]/60 hover:shadow-[0_12px_32px_rgba(255,100,51,0.15)] hover:-translate-y-0.5 overflow-hidden">
+      {/* 3D Preview / Thumbnail Area (Cheat Cook Warm Cream) */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-b from-[#FFF8F4] to-[#FFF1EA] flex items-center justify-center border-b border-[#F0E4DD]">
+        {thumbnailSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={model.thumbnail_url || model.thumbnail_path || ""}
+            src={thumbnailSrc}
             alt={model.name}
-            className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+            onError={() => setImageError(true)}
+            className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-muted-foreground transition-transform duration-300 group-hover:scale-110">
-            <div className="relative flex items-center justify-center">
-              <CheatCookLogo className="w-14 h-14 drop-shadow-lg opacity-85" />
-              <div className="absolute inset-0 blur-2xl bg-[#FF6433]/20 rounded-full" />
+          <div className="flex flex-col items-center justify-center text-muted-foreground transition-transform duration-300 group-hover:scale-105">
+            <div className="relative flex items-center justify-center p-3 rounded-2xl bg-white shadow-sm border border-[#F0E4DD]">
+              <CheatCookLogo className="w-12 h-12 drop-shadow-sm opacity-90" />
             </div>
-            <span className="text-[10px] mt-2.5 font-mono font-semibold text-[#8391A9] tracking-widest uppercase">
+            <span className="text-[10px] mt-2 font-mono font-bold text-[#64748B] tracking-widest uppercase">
               Modelo 3D GLB
             </span>
           </div>
@@ -98,22 +104,22 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
               status={model.status}
               className={
                 model.status === "available"
-                  ? "group-hover/badge:ring-2 group-hover/badge:ring-amber-400/60 group-hover/badge:shadow-[0_0_12px_rgba(251,191,36,0.35)] transition-all cursor-pointer"
-                  : "group-hover/badge:ring-2 group-hover/badge:ring-emerald-400/60 group-hover/badge:shadow-[0_0_12px_rgba(52,211,153,0.35)] transition-all cursor-pointer"
+                  ? "group-hover/badge:ring-2 group-hover/badge:ring-amber-400/60 transition-all cursor-pointer shadow-sm"
+                  : "group-hover/badge:ring-2 group-hover/badge:ring-emerald-400/60 transition-all cursor-pointer shadow-sm"
               }
             />
           </button>
 
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#0B1220]/80 backdrop-blur-md px-2.5 py-0.5 text-xs font-mono font-semibold text-white border border-border shadow-sm pointer-events-none">
-            <Layers className="w-3 h-3 text-[#FF7A50]" />
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-xs font-mono font-semibold text-[#0F172A] border border-[#F0E4DD] shadow-sm pointer-events-none">
+            <Layers className="w-3 h-3 text-[#FF6433]" />
             v{model.version}
           </span>
         </div>
 
         {/* Interactive Quick View overlay: siempre disponible */}
-        <div className="absolute inset-0 bg-[#0B1220]/50 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+        <div className="absolute inset-0 bg-[#0F172A]/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
           <Link href={`/models/${model.id}`}>
-            <Button size="sm" className="shadow-lg gap-1.5 font-semibold">
+            <Button size="sm" className="shadow-lg gap-1.5 font-semibold bg-[#FF6433] hover:bg-[#E84E1F] text-white">
               <Eye className="w-4 h-4" />
               Abrir Visor
             </Button>
@@ -122,19 +128,19 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
       </div>
 
       {/* Card Content */}
-      <div className="p-4 flex flex-col flex-1">
+      <div className="p-4 flex flex-col flex-1 bg-white">
         {/* Title & Metadata */}
         <div className="flex-1">
-          <h3 className="font-bold text-base text-white tracking-tight line-clamp-1 group-hover:text-[#FF7A50] transition-colors">
+          <h3 className="font-bold text-base text-[#0F172A] tracking-tight line-clamp-1 group-hover:text-[#FF6433] transition-colors">
             {model.name}
           </h3>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#8391A9]">
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#64748B]">
             <span title="Fecha de última actualización">
               {formatDate(model.updated_at)}
             </span>
             {model.file_size ? (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 font-mono">
                 <HardDrive className="w-3 h-3 opacity-70" />
                 {formatBytes(model.file_size)}
               </span>
@@ -142,20 +148,20 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
           </div>
 
           {model.last_error && (
-            <p className="mt-2 text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl p-2 line-clamp-2">
+            <p className="mt-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-2 line-clamp-2">
               {model.last_error}
             </p>
           )}
         </div>
 
         {/* Action Buttons: Visualizar (siempre activo), Actualizar y Eliminar */}
-        <div className="mt-4 pt-3 border-t border-border flex items-center gap-2">
+        <div className="mt-4 pt-3 border-t border-[#F0E4DD] flex items-center gap-2">
           {/* Visualizar */}
           <Link href={`/models/${model.id}`} className="flex-1">
             <Button
               variant="default"
               size="sm"
-              className="w-full gap-1.5 text-xs font-semibold"
+              className="w-full gap-1.5 text-xs font-semibold bg-[#FF6433] hover:bg-[#E84E1F] text-white shadow-sm"
             >
               <Eye className="w-3.5 h-3.5" />
               Visualizar
@@ -168,10 +174,10 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
             size="sm"
             onClick={() => onUpdate(model)}
             disabled={isUpdating}
-            className="gap-1.5 text-xs hover:border-[#FF6433]/50 font-medium px-3"
+            className="gap-1.5 text-xs border-[#F0E4DD] text-[#475569] hover:bg-[#FFF1EA] hover:border-[#FF6433]/40 font-medium px-3"
             title="Subir nueva versión conservando el mismo identificador"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-[#A7B3C6]" />
+            <RefreshCw className="w-3.5 h-3.5 text-[#FF6433]" />
             <span>Actualizar</span>
           </Button>
 
@@ -181,7 +187,7 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
             size="sm"
             onClick={() => onDelete(model)}
             disabled={isUpdating}
-            className="text-xs hover:bg-rose-500/15 hover:text-rose-400 text-[#8391A9] p-2 h-8 w-8 rounded-xl shrink-0"
+            className="text-xs hover:bg-rose-50 hover:text-rose-600 text-[#94A3B8] p-2 h-8 w-8 rounded-xl shrink-0"
             title="Eliminar modelo y archivos asociados"
           >
             <Trash2 className="w-4 h-4" />
