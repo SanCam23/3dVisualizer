@@ -76,23 +76,58 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
         url,
         (gltf) => {
           const model = gltf.scene;
-          const box = new THREE.Box3().setFromObject(model);
-          const center = box.getCenter(new THREE.Vector3());
-          const size = box.getSize(new THREE.Vector3());
 
-          // Center model on grid
+          // Helper to detect studio backdrops, floor planes or shadows that should not dominate the framing
+          const isBackdrop = (name: string) => {
+            const n = (name || "").toLowerCase();
+            return (
+              n.includes("backdrop") ||
+              n.includes("studio") ||
+              n.includes("floor") ||
+              n.includes("ground") ||
+              n.includes("suelo") ||
+              n.includes("fondo") ||
+              n.includes("shadow")
+            );
+          };
+
+          const subjectBox = new THREE.Box3();
+          let foundSubjectMesh = false;
+
+          model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              if (isBackdrop(child.name)) {
+                // Hide backdrop in thumbnail to ensure clean transparent background on the product card
+                child.visible = false;
+              } else {
+                subjectBox.expandByObject(child);
+                foundSubjectMesh = true;
+              }
+            }
+          });
+
+          if (!foundSubjectMesh || subjectBox.isEmpty()) {
+            subjectBox.setFromObject(model);
+          }
+
+          const center = subjectBox.getCenter(new THREE.Vector3());
+          const size = subjectBox.getSize(new THREE.Vector3());
+
+          // Center model on grid based on the actual subject
           model.position.x = -center.x;
-          model.position.y = -box.min.y;
+          model.position.y = -subjectBox.min.y;
           model.position.z = -center.z;
           scene.add(model);
 
           const maxDim = Math.max(size.x, size.y, size.z);
           const fov = camera.fov * (Math.PI / 180);
           let dist = (maxDim / 2) / Math.tan(fov / 2);
-          dist = Math.max(dist * 0.9, 1.2);
+          // Framing factor so the subject comfortably fills ~80% of preview
+          dist = Math.max(dist * 1.15, 1.2);
 
-          const targetY = size.y * 0.4;
-          camera.position.set(dist * 0.65, targetY + dist * 0.4, dist * 0.8);
+          const targetY = size.y * 0.48;
+          // Clean 3/4 isometric perspective
+          camera.position.set(dist * 0.82, targetY + dist * 0.42, dist * 0.95);
           camera.lookAt(0, targetY, 0);
 
           renderer.render(scene, camera);

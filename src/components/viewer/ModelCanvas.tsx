@@ -22,6 +22,34 @@ interface ModelCanvasProps {
   onLoaded?: (info: { meshCount: number; vertexCount: number; bounds: THREE.Vector3 }) => void;
 }
 
+// Helper to compute bounding box focusing on primary subject (ignoring massive backdrops/floors)
+function getSubjectBox(root: THREE.Object3D): THREE.Box3 {
+  const isBackdrop = (name: string) => {
+    const n = (name || "").toLowerCase();
+    return (
+      n.includes("backdrop") ||
+      n.includes("studio") ||
+      n.includes("floor") ||
+      n.includes("ground") ||
+      n.includes("suelo") ||
+      n.includes("shadow")
+    );
+  };
+
+  const subjectBox = new THREE.Box3();
+  let foundSubject = false;
+  root.traverse((child) => {
+    if (child instanceof THREE.Mesh && !isBackdrop(child.name)) {
+      subjectBox.expandByObject(child);
+      foundSubject = true;
+    }
+  });
+
+  return foundSubject && !subjectBox.isEmpty()
+    ? subjectBox
+    : new THREE.Box3().setFromObject(root);
+}
+
 export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
   (
     {
@@ -44,6 +72,16 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
     const currentModelRef = useRef<THREE.Group | null>(null);
     const dracoLoaderRef = useRef<DRACOLoader | null>(null);
 
+    // Synchronize latest callback and mode refs to satisfy exhaustive-deps without triggering model reload
+    const wireframeRef = useRef(wireframe);
+    wireframeRef.current = wireframe;
+    const onProgressRef = useRef(onProgress);
+    onProgressRef.current = onProgress;
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
+    const onLoadedRef = useRef(onLoaded);
+    onLoadedRef.current = onLoaded;
+
     // Initial camera position cache for Reset
     const initialCamPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 2, 5));
     const initialTargetRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
@@ -59,18 +97,18 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       },
       centerModel: () => {
         if (!currentModelRef.current || !cameraRef.current || !controlsRef.current) return;
-        const box = new THREE.Box3().setFromObject(currentModelRef.current);
+        const box = getSubjectBox(currentModelRef.current);
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = cameraRef.current.fov * (Math.PI / 180);
-        let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 0.75;
-        cameraDistance = Math.max(cameraDistance, 1.1);
+        let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 0.9;
+        cameraDistance = Math.max(cameraDistance, 1.2);
 
-        const targetY = Math.min(size.y * 0.25, 0.4);
+        const targetY = size.y * 0.45;
         cameraRef.current.position.set(
-          cameraDistance * 0.55,
+          cameraDistance * 0.6,
           targetY + cameraDistance * 0.35,
-          cameraDistance * 0.65
+          cameraDistance * 0.75
         );
         controlsRef.current.target.set(0, targetY, 0);
         controlsRef.current.update();
@@ -210,6 +248,7 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
           renderer.domElement.parentElement.removeChild(renderer.domElement);
         }
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Update background color dynamically
@@ -303,16 +342,16 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
 
               if (child.material) {
                 if (Array.isArray(child.material)) {
-                  child.material.forEach((m) => (m.wireframe = wireframe));
+                  child.material.forEach((m) => (m.wireframe = wireframeRef.current));
                 } else {
-                  child.material.wireframe = wireframe;
+                  child.material.wireframe = wireframeRef.current;
                 }
               }
             }
           });
 
-          // Auto-frame: calculate bounding box, center model at y=0
-          const box = new THREE.Box3().setFromObject(model);
+          // Auto-frame: calculate bounding box focusing on primary subject, center model at y=0
+          const box = getSubjectBox(model);
           const center = box.getCenter(new THREE.Vector3());
           const size = box.getSize(new THREE.Vector3());
 
@@ -323,17 +362,17 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
 
           scene.add(model);
 
-          // Position camera closer to model and origin
+          // Position camera closer to model and origin (vista cercana y detallada)
           const maxDim = Math.max(size.x, size.y, size.z);
           const fov = camera.fov * (Math.PI / 180);
           let cameraDistance = (maxDim / 2) / Math.tan(fov / 2);
-          cameraDistance = Math.max(cameraDistance * 0.75, 1.1);
+          cameraDistance = Math.max(cameraDistance * 0.9, 1.2);
 
-          const targetY = Math.min(size.y * 0.25, 0.4);
+          const targetY = size.y * 0.45;
           const newCamPos = new THREE.Vector3(
-            cameraDistance * 0.55,
+            cameraDistance * 0.6,
             targetY + cameraDistance * 0.35,
-            cameraDistance * 0.65
+            cameraDistance * 0.75
           );
           const newTarget = new THREE.Vector3(0, targetY, 0);
 
@@ -359,23 +398,23 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
           }
 
           // Notify parent that model is fully ready and compiled
-          if (onLoaded) {
-            onLoaded({ meshCount, vertexCount, bounds: size });
+          if (onLoadedRef.current) {
+            onLoadedRef.current({ meshCount, vertexCount, bounds: size });
           }
-          if (onProgress) {
-            onProgress(100);
+          if (onProgressRef.current) {
+            onProgressRef.current(100);
           }
         },
         (xhr) => {
-          if (xhr.lengthComputable && onProgress) {
+          if (xhr.lengthComputable && onProgressRef.current) {
             const percent = Math.round((xhr.loaded / xhr.total) * 100);
-            onProgress(percent);
+            onProgressRef.current(percent);
           }
         },
         (error) => {
           console.error("Three.js GLTFLoader error:", error);
-          if (onError) {
-            onError(
+          if (onErrorRef.current) {
+            onErrorRef.current(
               "No se pudo cargar el modelo 3D (.glb). Compruebe que el archivo es accesible o reintente."
             );
           }

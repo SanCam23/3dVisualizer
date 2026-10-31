@@ -1,8 +1,23 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { Layers } from "lucide-react";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -25,14 +40,9 @@ export const metadata: Metadata = {
     "GLB",
   ],
   icons: {
-    icon: [
-      { url: "/logo.svg", type: "image/svg+xml" },
-      { url: "/icon", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-icon", type: "image/png" },
-    ],
+    icon: "/logo.svg",
     shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
   openGraph: {
     type: "website",
@@ -59,8 +69,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className="min-h-screen flex flex-col antialiased selection:bg-[#FF6433]/30 selection:text-white bg-background text-foreground">
+    <html lang="es" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className="min-h-screen font-sans flex flex-col antialiased selection:bg-[#FF6433]/30 selection:text-white bg-background text-foreground"
+      >
         {/* Global Cheat Cook Header (Prominent & Spacious, Light Theme) */}
         <header className="sticky top-0 z-40 border-b border-[#F0E4DD] bg-[#FFF8F4]/90 backdrop-blur-md">
           <div className="container mx-auto px-4 h-20 sm:h-24 flex items-center justify-between">

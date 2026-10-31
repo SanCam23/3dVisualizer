@@ -75,8 +75,8 @@ const config: Config = {
         pill: "9999px",
       },
       fontFamily: {
-        sans: ["'Plus Jakarta Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        mono: ["'JetBrains Mono'", "monospace"],
+        sans: ["var(--font-sans)", "'Plus Jakarta Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ["var(--font-mono)", "'JetBrains Mono'", "monospace"],
       },
       boxShadow: {
         "warm-sm": "0 1px 2px rgba(60,24,8,.06), 0 1px 1px rgba(60,24,8,.04)",

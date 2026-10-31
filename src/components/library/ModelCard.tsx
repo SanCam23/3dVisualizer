@@ -74,7 +74,7 @@ export function ModelCard({ model, onUpdate, onDelete, onStatusChange }: ModelCa
             src={thumbnailSrc}
             alt={model.name}
             onError={() => setImageError(true)}
-            className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+            className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-muted-foreground transition-transform duration-300 group-hover:scale-105">
