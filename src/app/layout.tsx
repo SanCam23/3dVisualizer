@@ -5,10 +5,51 @@ import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { Layers } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cheat Cook · 3D Studio & Visualizer",
-  description: "Biblioteca y visor interactivo de modelos 3D oficial de Cheat Cook, con Three.js y conversión headless de Blender.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://3d-visualizer-sancam23s-projects.vercel.app"
+  ),
+  title: "Cheat Cook | Estudio 3D y Visor Interactivo",
+  description: "Biblioteca y visor interactivo de modelos 3D oficial de Cheat Cook: visualización de alimentos, nevera y despensa en WebGL en tiempo real.",
+  applicationName: "Cheat Cook 3D Studio",
+  authors: [{ name: "Cheat Cook" }],
+  generator: "Next.js",
+  keywords: [
+    "Cheat Cook",
+    "3D Studio",
+    "Visor 3D",
+    "WebGL",
+    "Three.js",
+    "Modelos 3D",
+    "Nevera Inteligente",
+    "Alimentos 3D",
+    "GLB",
+  ],
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/icon", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon", type: "image/png" },
+    ],
+    shortcut: "/logo.svg",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "/",
+    siteName: "Cheat Cook 3D Studio",
+    title: "Cheat Cook | Estudio 3D y Visor Interactivo",
+    description: "Biblioteca y visor interactivo de modelos 3D oficial de Cheat Cook: inventario visual en 3D, modelos GLB y renderizado WebGL en tiempo real.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cheat Cook | Estudio 3D y Visor Interactivo",
+    description: "Biblioteca y visor interactivo de modelos 3D oficial de Cheat Cook: inventario visual en 3D y renderizado WebGL en tiempo real.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
