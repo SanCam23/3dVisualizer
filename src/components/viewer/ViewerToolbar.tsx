@@ -9,14 +9,23 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } fr
 import { Input } from "@/components/ui/Input";
 import { CheatCookLogo } from "@/components/ui/CheatCookLogo";
 import { formatBytes, formatDate } from "@/lib/utils/formatters";
-import { ArrowLeft, Layers, Download, HardDrive, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Layers, Download, HardDrive, Lock, CheckCircle2, AlertCircle, Play, Pause } from "lucide-react";
 
 interface ViewerToolbarProps {
   model: Model3D;
   meshStats?: { meshCount: number; vertexCount: number } | null;
+  animationsCount?: number;
+  isPlaying?: boolean;
+  onTogglePlay?: () => void;
 }
 
-export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
+export function ViewerToolbar({
+  model,
+  meshStats,
+  animationsCount,
+  isPlaying = false,
+  onTogglePlay,
+}: ViewerToolbarProps) {
   const [currentStatus, setCurrentStatus] = useState<ModelStatus>(model.status);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -145,6 +154,30 @@ export function ViewerToolbar({ model, meshStats }: ViewerToolbarProps) {
                   <span className="hidden lg:inline-flex items-center gap-1 font-mono text-[11px] text-[#475569]">
                     • {meshStats.meshCount} mallas / {meshStats.vertexCount.toLocaleString()} vértices
                   </span>
+                ) : null}
+                {animationsCount !== undefined && animationsCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={onTogglePlay}
+                    className={`hidden sm:inline-flex items-center gap-1.5 font-mono text-[11px] px-2.5 py-0.5 rounded-full border transition-all cursor-pointer font-bold shadow-xs active:scale-95 ${
+                      isPlaying
+                        ? "bg-[#FF6433] text-white border-[#FF6433] shadow-[0_2px_8px_rgba(255,100,51,0.3)]"
+                        : "bg-[#FFF1EA] text-[#FF6433] border-[#FF6433]/30 hover:bg-[#FFE6DB]"
+                    }`}
+                    title={isPlaying ? "Pausar animación" : "Reproducir animación"}
+                  >
+                    {isPlaying ? (
+                      <>
+                        <Pause className="w-2.5 h-2.5 fill-current" />
+                        <span>Pausar ({animationsCount})</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-2.5 h-2.5 fill-current" />
+                        <span>Reproducir ({animationsCount})</span>
+                      </>
+                    )}
+                  </button>
                 ) : null}
               </div>
             </div>

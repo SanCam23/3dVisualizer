@@ -17,29 +17,41 @@ interface ModelCanvasProps {
   wireframe?: boolean;
   showGrid?: boolean;
   backgroundColor?: string;
+  isPlaying?: boolean;
+  activeAnimationIndex?: number;
   onProgress?: (percent: number) => void;
   onError?: (err: string) => void;
-  onLoaded?: (info: { meshCount: number; vertexCount: number; bounds: THREE.Vector3 }) => void;
+  onLoaded?: (info: {
+    meshCount: number;
+    vertexCount: number;
+    bounds: THREE.Vector3;
+    animations: string[];
+  }) => void;
 }
 
-// Helper to compute bounding box focusing on primary subject (ignoring massive backdrops/floors)
-function getSubjectBox(root: THREE.Object3D): THREE.Box3 {
-  const isBackdrop = (name: string) => {
-    const n = (name || "").toLowerCase();
-    return (
-      n.includes("backdrop") ||
-      n.includes("studio") ||
-      n.includes("floor") ||
-      n.includes("ground") ||
-      n.includes("suelo") ||
-      n.includes("shadow")
-    );
-  };
+// Helper to compute bounding box focusing on primary subject (ignoring massive backdrops/floors and boolean cutters)
+function isBackdrop(name: string): boolean {
+  const n = (name || "").toLowerCase();
+  return (
+    n.includes("backdrop") ||
+    n.includes("studio") ||
+    n.includes("floor") ||
+    n.includes("ground") ||
+    n.includes("suelo") ||
+    n.includes("shadow")
+  );
+}
 
+function isCutter(name: string): boolean {
+  const n = (name || "").toLowerCase();
+  return n.includes("cutter") || n.includes("boolean") || n.includes("bool_");
+}
+
+function getSubjectBox(root: THREE.Object3D): THREE.Box3 {
   const subjectBox = new THREE.Box3();
   let foundSubject = false;
   root.traverse((child) => {
-    if (child instanceof THREE.Mesh && !isBackdrop(child.name)) {
+    if (child instanceof THREE.Mesh && !isBackdrop(child.name) && !isCutter(child.name)) {
       subjectBox.expandByObject(child);
       foundSubject = true;
     }
@@ -57,6 +69,8 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       wireframe = false,
       showGrid = true,
       backgroundColor = "#FFF8F4",
+      isPlaying = false,
+      activeAnimationIndex = -1,
       onProgress,
       onError,
       onLoaded,
@@ -72,9 +86,18 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
     const currentModelRef = useRef<THREE.Group | null>(null);
     const dracoLoaderRef = useRef<DRACOLoader | null>(null);
 
+    // Animation refs
+    const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+    const actionsRef = useRef<THREE.AnimationAction[]>([]);
+    const clockRef = useRef<THREE.Clock>(new THREE.Clock());
+
     // Synchronize latest callback and mode refs to satisfy exhaustive-deps without triggering model reload
     const wireframeRef = useRef(wireframe);
     wireframeRef.current = wireframe;
+    const isPlayingRef = useRef(isPlaying);
+    isPlayingRef.current = isPlaying;
+    const activeAnimationIndexRef = useRef(activeAnimationIndex);
+    activeAnimationIndexRef.current = activeAnimationIndex;
     const onProgressRef = useRef(onProgress);
     onProgressRef.current = onProgress;
     const onErrorRef = useRef(onError);
@@ -189,7 +212,7 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       scene.add(grid);
       gridRef.current = grid;
 
-      // 7. Animation Loop with Tab Visibility Awareness
+      // 7. Animation Loop with Tab Visibility Awareness & Mixer Updates
       let animId: number;
       let isVisible = !document.hidden;
 
@@ -198,10 +221,17 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       };
       document.addEventListener("visibilitychange", handleVisibilityChange);
 
+      const clock = clockRef.current;
+      clock.start();
+
       const animate = () => {
         animId = requestAnimationFrame(animate);
         if (isVisible) {
+          const delta = clock.getDelta();
           controls.update();
+          if (mixerRef.current) {
+            mixerRef.current.update(delta);
+          }
           renderer.render(scene, camera);
         }
       };
@@ -279,6 +309,35 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       });
     }, [wireframe]);
 
+    // Handle animation play / pause / switch dynamically
+    useEffect(() => {
+      if (!mixerRef.current || actionsRef.current.length === 0) return;
+
+      if (isPlaying) {
+        if (activeAnimationIndex === -1 || activeAnimationIndex === undefined) {
+          // Play all synchronized animation tracks together (e.g. doors + hat + reaction)
+          actionsRef.current.forEach((action) => {
+            action.paused = false;
+            action.play();
+          });
+        } else {
+          const targetIdx = Math.max(0, Math.min(activeAnimationIndex, actionsRef.current.length - 1));
+          actionsRef.current.forEach((action, idx) => {
+            if (idx === targetIdx) {
+              action.paused = false;
+              action.play();
+            } else {
+              action.stop();
+            }
+          });
+        }
+      } else {
+        actionsRef.current.forEach((action) => {
+          action.paused = true;
+        });
+      }
+    }, [isPlaying, activeAnimationIndex]);
+
     // Load Model via GLTFLoader with DRACOLoader & Meshopt acceleration
     useEffect(() => {
       if (!sceneRef.current || !cameraRef.current || !controlsRef.current || !modelUrl) {
@@ -290,7 +349,13 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       const controls = controlsRef.current;
       const renderer = rendererRef.current;
 
-      // Remove existing model if any
+      // Remove existing model and mixer if any
+      if (mixerRef.current) {
+        mixerRef.current.stopAllAction();
+        mixerRef.current = null;
+      }
+      actionsRef.current = [];
+
       if (currentModelRef.current) {
         scene.remove(currentModelRef.current);
         currentModelRef.current.traverse((child) => {
@@ -327,12 +392,43 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
           const model = gltf.scene;
           currentModelRef.current = model;
 
-          // Enable shadows and apply initial wireframe setting
+          // Animations setup
+          const clips = gltf.animations || [];
+          const clipNames = clips.map((c, i) => c.name || `Animación ${i + 1}`);
+
+          if (clips.length > 0) {
+            const mixer = new THREE.AnimationMixer(model);
+            mixerRef.current = mixer;
+            actionsRef.current = clips.map((clip) => {
+              const action = mixer.clipAction(clip);
+              action.setLoop(THREE.LoopRepeat, Infinity);
+              action.clampWhenFinished = false;
+              return action;
+            });
+
+            if (isPlayingRef.current) {
+              const targetIdx = activeAnimationIndexRef.current ?? -1;
+              if (targetIdx === -1) {
+                actionsRef.current.forEach((a) => a.play());
+              } else {
+                const actionToPlay = actionsRef.current[targetIdx] || actionsRef.current[0];
+                actionToPlay?.play();
+              }
+            }
+          }
+
+          // Enable shadows, heal broken Blender emission exports, and apply initial wireframe setting
           let meshCount = 0;
           let vertexCount = 0;
 
           model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
+              // Hide boolean cutter objects exported by accident from Blender (e.g. Cabinet_Cutter)
+              if (isCutter(child.name)) {
+                child.visible = false;
+                return;
+              }
+
               meshCount++;
               if (child.geometry?.attributes?.position) {
                 vertexCount += child.geometry.attributes.position.count;
@@ -341,11 +437,46 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
               child.receiveShadow = true;
 
               if (child.material) {
-                if (Array.isArray(child.material)) {
-                  child.material.forEach((m) => (m.wireframe = wireframeRef.current));
-                } else {
-                  child.material.wireframe = wireframeRef.current;
-                }
+                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                mats.forEach((m) => {
+                  m.wireframe = wireframeRef.current;
+
+                  // Heal broken Blender export (black base color + pure white emissive, no map)
+                  // which washes out the model to a flat solid white silhouette with no textures or shading
+                  if (
+                    m instanceof THREE.MeshStandardMaterial &&
+                    m.color?.getHex() === 0x000000 &&
+                    m.emissive?.getHex() === 0xffffff &&
+                    !m.map
+                  ) {
+                    m.emissive.set(0x000000);
+                    m.metalness = 0;
+                    m.roughness = 0.35;
+
+                    const matName = (m.name || "").toLowerCase();
+                    const meshName = (child.name || "").toLowerCase();
+                    if (
+                      matName.includes("orange") ||
+                      meshName.includes("orange") ||
+                      meshName.includes("cabinet") ||
+                      meshName.includes("door") ||
+                      meshName.includes("foot")
+                    ) {
+                      m.color.set("#FF6433"); // Cheat Cook Signature Coral
+                    } else if (
+                      matName.includes("cream") ||
+                      meshName.includes("hat") ||
+                      meshName.includes("handle") ||
+                      meshName.includes("divider") ||
+                      meshName.includes("liner")
+                    ) {
+                      m.color.set("#FFF8F4"); // Cheat Cook Warm Cream
+                    } else {
+                      m.color.set("#FF6433");
+                    }
+                    m.needsUpdate = true;
+                  }
+                });
               }
             }
           });
@@ -399,7 +530,12 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
 
           // Notify parent that model is fully ready and compiled
           if (onLoadedRef.current) {
-            onLoadedRef.current({ meshCount, vertexCount, bounds: size });
+            onLoadedRef.current({
+              meshCount,
+              vertexCount,
+              bounds: size,
+              animations: clipNames,
+            });
           }
           if (onProgressRef.current) {
             onProgressRef.current(100);
@@ -422,6 +558,11 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       );
 
       return () => {
+        if (mixerRef.current) {
+          mixerRef.current.stopAllAction();
+          mixerRef.current = null;
+        }
+        actionsRef.current = [];
         if (dracoLoaderRef.current) {
           dracoLoaderRef.current.dispose();
           dracoLoaderRef.current = null;

@@ -91,17 +91,61 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
             );
           };
 
+          const isCutter = (name: string) => {
+            const n = (name || "").toLowerCase();
+            return n.includes("cutter") || n.includes("boolean") || n.includes("bool_");
+          };
+
           const subjectBox = new THREE.Box3();
           let foundSubjectMesh = false;
 
           model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
-              if (isBackdrop(child.name)) {
-                // Hide backdrop in thumbnail to ensure clean transparent background on the product card
+              if (isBackdrop(child.name) || isCutter(child.name)) {
+                // Hide backdrop and boolean cutter objects in thumbnail
                 child.visible = false;
               } else {
                 subjectBox.expandByObject(child);
                 foundSubjectMesh = true;
+
+                // Heal broken Blender export (black base color + pure white emissive, no map)
+                if (child.material) {
+                  const mats = Array.isArray(child.material) ? child.material : [child.material];
+                  mats.forEach((m) => {
+                    if (
+                      m instanceof THREE.MeshStandardMaterial &&
+                      m.color?.getHex() === 0x000000 &&
+                      m.emissive?.getHex() === 0xffffff &&
+                      !m.map
+                    ) {
+                      m.emissive.set(0x000000);
+                      m.metalness = 0;
+                      m.roughness = 0.35;
+                      const matName = (m.name || "").toLowerCase();
+                      const meshName = (child.name || "").toLowerCase();
+                      if (
+                        matName.includes("orange") ||
+                        meshName.includes("orange") ||
+                        meshName.includes("cabinet") ||
+                        meshName.includes("door") ||
+                        meshName.includes("foot")
+                      ) {
+                        m.color.set("#FF6433");
+                      } else if (
+                        matName.includes("cream") ||
+                        meshName.includes("hat") ||
+                        meshName.includes("handle") ||
+                        meshName.includes("divider") ||
+                        meshName.includes("liner")
+                      ) {
+                        m.color.set("#FFF8F4");
+                      } else {
+                        m.color.set("#FF6433");
+                      }
+                      m.needsUpdate = true;
+                    }
+                  });
+                }
               }
             }
           });

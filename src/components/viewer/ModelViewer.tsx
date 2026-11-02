@@ -23,6 +23,11 @@ export function ModelViewer({ model }: ModelViewerProps) {
   const [backgroundColor, setBackgroundColor] = useState(BACKGROUND_PRESETS[0].value);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Animations state (-1 means play all synchronized animations together)
+  const [animations, setAnimations] = useState<string[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [activeAnimationIndex, setActiveAnimationIndex] = useState(-1);
+
   const [loadPercent, setLoadPercent] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,10 +55,16 @@ export function ModelViewer({ model }: ModelViewerProps) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-screen overflow-hidden bg-background select-none"
+      className="fixed inset-0 z-50 flex flex-col w-screen h-screen overflow-hidden bg-[#FFF8F4] select-none"
     >
       {/* Top Toolbar */}
-      <ViewerToolbar model={model} meshStats={meshStats} />
+      <ViewerToolbar
+        model={model}
+        meshStats={meshStats}
+        animationsCount={animations.length}
+        isPlaying={isPlaying}
+        onTogglePlay={() => setIsPlaying((prev) => !prev)}
+      />
 
       {/* Main 3D Canvas or Status Fallback */}
       {modelUrl ? (
@@ -63,6 +74,8 @@ export function ModelViewer({ model }: ModelViewerProps) {
           wireframe={wireframe}
           showGrid={showGrid}
           backgroundColor={backgroundColor}
+          isPlaying={isPlaying}
+          activeAnimationIndex={activeAnimationIndex}
           onProgress={(percent) => {
             setLoadPercent(percent);
             if (percent >= 100) {
@@ -74,6 +87,7 @@ export function ModelViewer({ model }: ModelViewerProps) {
               meshCount: info.meshCount,
               vertexCount: info.vertexCount,
             });
+            setAnimations(info.animations || []);
             setIsLoading(false);
           }}
           onError={(err) => {
@@ -170,6 +184,14 @@ export function ModelViewer({ model }: ModelViewerProps) {
           onSelectBackground={setBackgroundColor}
           isFullscreen={isFullscreen}
           onToggleFullscreen={handleToggleFullscreen}
+          animations={animations}
+          isPlaying={isPlaying}
+          onTogglePlay={() => setIsPlaying((prev) => !prev)}
+          activeAnimationIndex={activeAnimationIndex}
+          onSelectAnimation={(idx) => {
+            setActiveAnimationIndex(idx);
+            setIsPlaying(true);
+          }}
         />
       )}
     </div>
