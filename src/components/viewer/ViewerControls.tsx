@@ -13,6 +13,7 @@ import {
   Pause,
   Film,
   ChevronUp,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -28,6 +29,8 @@ interface ViewerControlsProps {
   onCenterView: () => void;
   wireframe: boolean;
   onToggleWireframe: () => void;
+  toonMode?: boolean;
+  onToggleToonMode?: () => void;
   showGrid: boolean;
   onToggleGrid: () => void;
   backgroundColor: string;
@@ -46,6 +49,8 @@ export function ViewerControls({
   onCenterView,
   wireframe,
   onToggleWireframe,
+  toonMode = true,
+  onToggleToonMode,
   showGrid,
   onToggleGrid,
   backgroundColor,
@@ -188,6 +193,21 @@ export function ViewerControls({
       )}
 
       <div className="h-4 w-[1px] bg-[#F0E4DD] mx-1" />
+
+      {/* Cartoon / Toon Cel-Shading Toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggleToonMode}
+        className={`h-8 w-8 rounded-full transition-all ${
+          toonMode
+            ? "bg-[#FF6433]/15 text-[#FF6433] border border-[#FF6433]/30 shadow-xs"
+            : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#FFF1EA]"
+        }`}
+        title={toonMode ? "Desactivar estilo Cartoon (volver a PBR estándar)" : "Activar estilo Cartoon (Toon / Cel-shading)"}
+      >
+        <Sparkles className="w-4 h-4" />
+      </Button>
 
       {/* Wireframe Toggle */}
       <Button

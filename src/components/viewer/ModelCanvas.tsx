@@ -6,6 +6,7 @@ import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { healBrokenMaterial } from "@/lib/utils/materialHealer";
 
 export interface ModelCanvasHandle {
   resetCamera: () => void;
@@ -15,6 +16,7 @@ export interface ModelCanvasHandle {
 interface ModelCanvasProps {
   modelUrl: string;
   wireframe?: boolean;
+  toonMode?: boolean;
   showGrid?: boolean;
   backgroundColor?: string;
   isPlaying?: boolean;
@@ -62,11 +64,25 @@ function getSubjectBox(root: THREE.Object3D): THREE.Box3 {
     : new THREE.Box3().setFromObject(root);
 }
 
+// 3-step discrete cel-shading rampa: shadow (0.3), mid-tone (0.7), lit highlight (1.0)
+let cachedToonTexture: THREE.DataTexture | null = null;
+function getToonGradientTexture(): THREE.DataTexture {
+  if (!cachedToonTexture) {
+    const colors = new Uint8Array([75, 175, 255]);
+    cachedToonTexture = new THREE.DataTexture(colors, 3, 1, THREE.RedFormat);
+    cachedToonTexture.minFilter = THREE.NearestFilter;
+    cachedToonTexture.magFilter = THREE.NearestFilter;
+    cachedToonTexture.needsUpdate = true;
+  }
+  return cachedToonTexture;
+}
+
 export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
   (
     {
       modelUrl,
       wireframe = false,
+      toonMode = true,
       showGrid = true,
       backgroundColor = "#FFF8F4",
       isPlaying = false,
@@ -94,6 +110,8 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
     // Synchronize latest callback and mode refs to satisfy exhaustive-deps without triggering model reload
     const wireframeRef = useRef(wireframe);
     wireframeRef.current = wireframe;
+    const toonModeRef = useRef(toonMode);
+    toonModeRef.current = toonMode;
     const isPlayingRef = useRef(isPlaying);
     isPlayingRef.current = isPlaying;
     const activeAnimationIndexRef = useRef(activeAnimationIndex);
@@ -165,8 +183,8 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.15;
+      renderer.toneMapping = THREE.LinearToneMapping;
+      renderer.toneMappingExposure = 1.05;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       rendererRef.current = renderer;
@@ -183,14 +201,14 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       controls.maxPolarAngle = Math.PI / 2 + 0.1;
       controlsRef.current = controls;
 
-      // 5. Lights (Balanced Studio Lighting)
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 1.4);
+      // 5. Lights (Balanced Studio Lighting with Cartoon Pop)
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 0.85);
       scene.add(hemiLight);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
       scene.add(ambientLight);
 
-      // Directional light with optimized 1024x1024 shadow map (75% less VRAM and faster render)
+      // Main directional light for sharp cartoon shading
       const mainLight = new THREE.DirectionalLight(0xffffff, 2.2);
       mainLight.position.set(5, 10, 7);
       mainLight.castShadow = true;
@@ -198,12 +216,13 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
       mainLight.shadow.bias = -0.0001;
       scene.add(mainLight);
 
-      const fillLight = new THREE.DirectionalLight(0xffa07a, 0.7);
+      const fillLight = new THREE.DirectionalLight(0xffecd6, 0.5);
       fillLight.position.set(-6, 3, -5);
       scene.add(fillLight);
 
-      const rimLight = new THREE.DirectionalLight(0xffffff, 0.6);
-      rimLight.position.set(0, -5, -5);
+      // Stylized rim light for anime/cartoon edge sheen (like Blender's Layer Weight)
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.85);
+      rimLight.position.set(0, 4, -6);
       scene.add(rimLight);
 
       // 6. Floor Grid Helper (Warm subtle grid lines)
@@ -308,6 +327,21 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
         }
       });
     }, [wireframe]);
+
+    // Update cartoon / toon shading mode dynamically
+    useEffect(() => {
+      if (!currentModelRef.current) return;
+      currentModelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.userData.pbrMaterial && child.userData.toonMaterial) {
+          child.material = toonMode ? child.userData.toonMaterial : child.userData.pbrMaterial;
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m) => (m.wireframe = wireframeRef.current));
+          } else {
+            child.material.wireframe = wireframeRef.current;
+          }
+        }
+      });
+    }, [toonMode]);
 
     // Handle animation play / pause / switch dynamically
     useEffect(() => {
@@ -442,41 +476,38 @@ export const ModelCanvas = forwardRef<ModelCanvasHandle, ModelCanvasProps>(
                   m.wireframe = wireframeRef.current;
 
                   // Heal broken Blender export (black base color + pure white emissive, no map)
-                  // which washes out the model to a flat solid white silhouette with no textures or shading
-                  if (
-                    m instanceof THREE.MeshStandardMaterial &&
-                    m.color?.getHex() === 0x000000 &&
-                    m.emissive?.getHex() === 0xffffff &&
-                    !m.map
-                  ) {
-                    m.emissive.set(0x000000);
-                    m.metalness = 0;
-                    m.roughness = 0.35;
+                  healBrokenMaterial(m, child.name);
 
-                    const matName = (m.name || "").toLowerCase();
-                    const meshName = (child.name || "").toLowerCase();
-                    if (
-                      matName.includes("orange") ||
-                      meshName.includes("orange") ||
-                      meshName.includes("cabinet") ||
-                      meshName.includes("door") ||
-                      meshName.includes("foot")
-                    ) {
-                      m.color.set("#FF6433"); // Cheat Cook Signature Coral
-                    } else if (
-                      matName.includes("cream") ||
-                      meshName.includes("hat") ||
-                      meshName.includes("handle") ||
-                      meshName.includes("divider") ||
-                      meshName.includes("liner")
-                    ) {
-                      m.color.set("#FFF8F4"); // Cheat Cook Warm Cream
-                    } else {
-                      m.color.set("#FF6433");
-                    }
-                    m.needsUpdate = true;
+                  // Stylized smooth cartoon plastic/vinyl finish (like the Nevera)
+                  if (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) {
+                    m.roughness = 0.32;
+                    m.metalness = 0.0;
                   }
                 });
+
+                // Generate discrete stepped cel-shading material for authentic anime/cartoon look
+                const gradTex = getToonGradientTexture();
+                const createToon = (orig: THREE.Material): THREE.Material => {
+                  if (orig instanceof THREE.MeshStandardMaterial || orig instanceof THREE.MeshPhysicalMaterial) {
+                    return new THREE.MeshToonMaterial({
+                      color: orig.color.clone(),
+                      map: orig.map,
+                      gradientMap: gradTex,
+                      wireframe: wireframeRef.current,
+                    });
+                  }
+                  return orig;
+                };
+
+                if (Array.isArray(child.material)) {
+                  child.userData.pbrMaterial = child.material;
+                  child.userData.toonMaterial = child.material.map(createToon);
+                  child.material = toonModeRef.current ? child.userData.toonMaterial : child.userData.pbrMaterial;
+                } else {
+                  child.userData.pbrMaterial = child.material;
+                  child.userData.toonMaterial = createToon(child.material);
+                  child.material = toonModeRef.current ? child.userData.toonMaterial : child.userData.pbrMaterial;
+                }
               }
             }
           });

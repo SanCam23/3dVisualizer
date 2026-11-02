@@ -19,6 +19,7 @@ export function ModelViewer({ model }: ModelViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [wireframe, setWireframe] = useState(false);
+  const [toonMode, setToonMode] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [backgroundColor, setBackgroundColor] = useState(BACKGROUND_PRESETS[0].value);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -72,6 +73,7 @@ export function ModelViewer({ model }: ModelViewerProps) {
           ref={canvasRef}
           modelUrl={modelUrl}
           wireframe={wireframe}
+          toonMode={toonMode}
           showGrid={showGrid}
           backgroundColor={backgroundColor}
           isPlaying={isPlaying}
@@ -178,6 +180,8 @@ export function ModelViewer({ model }: ModelViewerProps) {
           onCenterView={handleCenterModel}
           wireframe={wireframe}
           onToggleWireframe={() => setWireframe(!wireframe)}
+          toonMode={toonMode}
+          onToggleToonMode={() => setToonMode(!toonMode)}
           showGrid={showGrid}
           onToggleGrid={() => setShowGrid(!showGrid)}
           backgroundColor={backgroundColor}

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { healBrokenMaterial } from "./materialHealer";
 
 /**
  * Generates an automatic 384x384 transparent PNG thumbnail from a .glb File in the browser using Three.js.
@@ -27,25 +28,29 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
       renderer.setSize(384, 384);
       renderer.setPixelRatio(1);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.15;
+      renderer.toneMapping = THREE.LinearToneMapping;
+      renderer.toneMappingExposure = 1.05;
 
       const scene = new THREE.Scene();
 
-      // Balanced Studio Lights
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 1.4);
+      // Balanced Studio Lights with Cartoon Pop
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 0.85);
       scene.add(hemiLight);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
       scene.add(ambientLight);
 
       const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
       dirLight.position.set(5, 10, 7);
       scene.add(dirLight);
 
-      const fillLight = new THREE.DirectionalLight(0xffa07a, 0.7);
+      const fillLight = new THREE.DirectionalLight(0xffecd6, 0.5);
       fillLight.position.set(-6, 3, -5);
       scene.add(fillLight);
+
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.85);
+      rimLight.position.set(0, 4, -6);
+      scene.add(rimLight);
 
       const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
 
@@ -108,43 +113,29 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
                 subjectBox.expandByObject(child);
                 foundSubjectMesh = true;
 
-                // Heal broken Blender export (black base color + pure white emissive, no map)
+                // Convert to cel-shading cartoon material with discrete stepped shadow cuts
                 if (child.material) {
-                  const mats = Array.isArray(child.material) ? child.material : [child.material];
-                  mats.forEach((m) => {
-                    if (
-                      m instanceof THREE.MeshStandardMaterial &&
-                      m.color?.getHex() === 0x000000 &&
-                      m.emissive?.getHex() === 0xffffff &&
-                      !m.map
-                    ) {
-                      m.emissive.set(0x000000);
-                      m.metalness = 0;
-                      m.roughness = 0.35;
-                      const matName = (m.name || "").toLowerCase();
-                      const meshName = (child.name || "").toLowerCase();
-                      if (
-                        matName.includes("orange") ||
-                        meshName.includes("orange") ||
-                        meshName.includes("cabinet") ||
-                        meshName.includes("door") ||
-                        meshName.includes("foot")
-                      ) {
-                        m.color.set("#FF6433");
-                      } else if (
-                        matName.includes("cream") ||
-                        meshName.includes("hat") ||
-                        meshName.includes("handle") ||
-                        meshName.includes("divider") ||
-                        meshName.includes("liner")
-                      ) {
-                        m.color.set("#FFF8F4");
-                      } else {
-                        m.color.set("#FF6433");
-                      }
-                      m.needsUpdate = true;
+                  const colors = new Uint8Array([75, 175, 255]);
+                  const grad = new THREE.DataTexture(colors, 3, 1, THREE.RedFormat);
+                  grad.minFilter = THREE.NearestFilter;
+                  grad.magFilter = THREE.NearestFilter;
+                  grad.needsUpdate = true;
+
+                  const convertToToon = (m: THREE.Material): THREE.Material => {
+                    healBrokenMaterial(m, child.name);
+                    if (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) {
+                      return new THREE.MeshToonMaterial({
+                        color: m.color.clone(),
+                        map: m.map,
+                        gradientMap: grad,
+                      });
                     }
-                  });
+                    return m;
+                  };
+
+                  child.material = Array.isArray(child.material)
+                    ? child.material.map(convertToToon)
+                    : convertToToon(child.material);
                 }
               }
             }
