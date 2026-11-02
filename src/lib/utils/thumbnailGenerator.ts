@@ -29,26 +29,26 @@ export async function generateGlbThumbnail(file: File): Promise<Blob | null> {
       renderer.setPixelRatio(1);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.LinearToneMapping;
-      renderer.toneMappingExposure = 1.05;
+      renderer.toneMappingExposure = 1.0;
 
       const scene = new THREE.Scene();
 
       // Balanced Studio Lights with Cartoon Pop
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 0.85);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xf0e4dd, 0.5);
       scene.add(hemiLight);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
       scene.add(ambientLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
       dirLight.position.set(5, 10, 7);
       scene.add(dirLight);
 
-      const fillLight = new THREE.DirectionalLight(0xffecd6, 0.5);
+      const fillLight = new THREE.DirectionalLight(0xffecd6, 0.35);
       fillLight.position.set(-6, 3, -5);
       scene.add(fillLight);
 
-      const rimLight = new THREE.DirectionalLight(0xffffff, 0.85);
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.5);
       rimLight.position.set(0, 4, -6);
       scene.add(rimLight);
 

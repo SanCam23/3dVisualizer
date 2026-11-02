@@ -62,6 +62,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const body = await req.json().catch(() => ({}));
+
+    if (body?.password !== "CheatCook2026") {
+      return NextResponse.json(
+        { success: false, error: "Contraseña incorrecta. Se requiere autorización para eliminar." },
+        { status: 403 }
+      );
+    }
+
     await deleteModelRecord(id);
 
     return NextResponse.json({
